@@ -14,7 +14,7 @@ prog: (decl | expr)+ EOF            # Program
 decl: ID ':' INT_TYPE '=' NUM       #Declaration
     ;
 
-/* ANTLR resolves ambigouities by first alternative given */
+/* ANTLR resolves ambiguities by first alternative given */
 
 expr: expr '*' expr                 # Multiplication
     | expr '+' expr                 # Addition

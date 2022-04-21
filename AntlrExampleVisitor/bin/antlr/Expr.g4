@@ -14,13 +14,14 @@ prog: (decl | expr)+ EOF            # Program
 decl: ID ':' INT_TYPE '=' NUM       #Declaration
     ;
 
-/* ANTLR resolves ambigouities by first alternative given */
+/* ANTLR resolves ambiguities by first alternative given */
 
 expr: expr '*' expr                 # Multiplication
     | expr '+' expr                 # Addition
     | ID                            # Variable
     | NUM                           # Number
     ;
+
 
 /* Tokens */
 ID : [a-z][a-zA-Z0-9]*;
