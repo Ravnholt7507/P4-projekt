@@ -1,0 +1,7 @@
+int x = 55;
+bool momfugger = TRUE;
+
+while (!momfugger)
+{
+
+}
