@@ -19,6 +19,7 @@ import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SubtractionContext;
+import antlr.ExprParser.TrainContext;
 import antlr.ExprParser.VariableContext;
 import antlr.ExprParser.While_statContext;
 import antlr.ExprParser.Condition_blockContext;
@@ -155,14 +156,14 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         if (left.isDouble() || right.isDouble()) {
         	if (right.asDouble() == 0)
         	{
-        		throw new RuntimeException("Man må ikke dividere med 0");
+        		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
         	}
         	return new Division(left.asDouble() / right.asDouble());
         }
         else
         	if (right.asInt() == 0)
         	{
-        		throw new RuntimeException("Man må ikke dividere med 0");
+        		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
         	}
         return new Division(left.asInt() / right.asInt());
 	}
@@ -265,4 +266,51 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return new Number(Double.valueOf(ctx.getText()));
     }
 	
+    @Override
+    public Expression visitTrain(TrainContext ctx) {
+
+        String actfunc = ctx.trainParams().ACTFUNC().getText();
+        int epochs = Integer.valueOf(ctx.trainParams().epochs().getText());
+        Object input_array[] = ctx.trainParams().array().getTokens(ctx.trainParams().array().getChildCount()).toArray();
+        
+        System.out.print("test");
+
+        Object weight_array[];
+        weight_array = new Object[input_array.length];
+        
+        for (int i = 0; i < input_array.length; i++){
+            weight_array[i] = 0.5;
+        }
+        System.out.print(epochs);
+        for(int i = 0; i < epochs; i++){
+            feedforward(input_array, weight_array);
+            //backpropagate()
+        }
+        return super.visitTrain(ctx);
+    }
+    public double feedforward(Object[] input_array, Object[] weight_array){
+        double result = 0;
+        result = Sigmoid(Dotproduct(input_array, weight_array));
+        System.out.print("ff");
+        return result;  
+    }
+        public double Sigmoid(Object dotProduct){
+        	 System.out.print("sigmoid");
+        return (1/( 1 + Math.pow(Math.E,(-1*(double)dotProduct))));
+    }
+    public double Dotproduct(Object[] a, Object[] b){
+        if (a.length != b.length) {
+            throw new IllegalArgumentException(
+                    "Error computing dotProduct in Utilities.dotProduct: arrays should have the same length");
+        }
+        double sp = 0;
+        for (int i = 0; i < a.length; i++) {
+            for(int j = 0; j < b.length; j++) {
+                sp += (double) a[i] * (double) b[j];
+            }
+        }
+        System.out.print("dotp");
+        return sp;
+    }
 }
+

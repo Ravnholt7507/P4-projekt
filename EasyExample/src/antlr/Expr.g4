@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train)+ EOF            # Program
     ;
 
 decl		
@@ -30,10 +30,19 @@ stat_block
 while_stat: 'while' '(' expr ')' stat_block
  ;
  
+train: TRAIN '(' trainParams ')'
+;
+
+trainParams: ACTFUNC ',' epochs ',' array
+;
+
+epochs: INT
+;
  
- /* 
-array: '[' ']' 
-     | '[' element ']'
+ 
+
+array: ARRAY '[' ']' 
+     | ARRAY '[' element ']'
      ;
 
 element: value 
@@ -43,7 +52,7 @@ element: value
 value: array 
      | INT
      ;
-*/
+
 
 /* ANTLR resolves ambiguities by first alternative given */
 
@@ -66,6 +75,10 @@ print:
  ;
 
 /* Tokens */
+TRAIN:'train';
+ACTFUNC:'sigmoid';
+ARRAY:'array';
+
 
  /* Boolean operators */
 OR : '||';
