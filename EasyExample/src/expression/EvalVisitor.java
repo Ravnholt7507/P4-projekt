@@ -13,8 +13,8 @@ import antlr.ExprParser;
 import antlr.ExprParser.AdditionContext;
 import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DivisionContext;
+import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
-import antlr.ExprParser.FloatContext;
 import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.RelationalExprContext;
@@ -23,6 +23,7 @@ import antlr.ExprParser.VariableContext;
 import antlr.ExprParser.While_statContext;
 import antlr.ExprParser.Condition_blockContext;
 import antlr.ExprParser.If_statContext;
+import antlr.ExprParser.IntContext;
 import antlr.ExprParser.AndExprContext;
 import antlr.ExprParser.OrExprContext;
 
@@ -33,8 +34,6 @@ import Statements.While_stat;
 import Types.*;
 
 public class EvalVisitor extends ExprBaseVisitor<Expression> {
-
-
     // store variables (there's only one global scope!)
     private Map<String, Expression> memory = new HashMap<String, Expression>();
 
@@ -112,8 +111,18 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 
         Expression left = visit(ctx.expr(0));
         Expression right = visit(ctx.expr(1));
-
-        return new Multiplication(left.asDouble() * right.asDouble());
+        
+        if (left.isDouble() && right.isDouble())
+        	return new Multiplication(left.asDouble()  * right.asDouble());
+        
+        else if (left.isDouble() && !right.isDouble())
+        	return new Multiplication(left.asDouble() * right.asInt());
+        
+        else if (!left.isDouble() && right.isDouble())
+        	return new Multiplication(left.asInt() * right.asDouble());
+        
+        else
+        	return new Multiplication(left.asInt() * left.asInt());
 	}
 
 	@Override
@@ -122,7 +131,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         Expression left = visit(ctx.expr(0));
         Expression right = visit(ctx.expr(1));
         
-        return new Addition(left.asDouble() + right.asDouble());
+        if (left.isDouble() && right.isDouble())
+        	return new Addition(left.asDouble()  + right.asDouble());
+        
+        else if (left.isDouble() && !right.isDouble())
+        	return new Addition(left.asDouble() + right.asInt());
+        
+        else if (!left.isDouble() && right.isDouble())
+        	return new Addition(left.asInt() + right.asDouble());
+        
+        else
+        	return new Addition(left.asInt() + left.asInt());
 	}
 	
 	@Override
@@ -131,7 +150,21 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         Expression left = visit(ctx.expr(0));
         Expression right = visit(ctx.expr(1));
         
-        return new Addition(left.asDouble() / right.asDouble());
+        
+        
+        if (left.isDouble() || right.isDouble()) {
+        	if (right.asDouble() == 0)
+        	{
+        		throw new RuntimeException("Man må ikke dividere med 0");
+        	}
+        	return new Division(left.asDouble() / right.asDouble());
+        }
+        else
+        	if (right.asInt() == 0)
+        	{
+        		throw new RuntimeException("Man må ikke dividere med 0");
+        	}
+        return new Division(left.asInt() / right.asInt());
 	}
 	
 	@Override
@@ -140,8 +173,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         Expression left = visit(ctx.expr(0));
         Expression right = visit(ctx.expr(1));
         
-        return new Addition(left.asDouble() - right.asDouble());
+        if (left.isDouble() && right.isDouble())
+        	return new Subtraction(left.asDouble()  - right.asDouble());
         
+        else if (left.isDouble() && !right.isDouble())
+        	return new Subtraction(left.asDouble() - right.asInt());
+        
+        else if (!left.isDouble() && right.isDouble())
+        	return new Subtraction(left.asInt() - right.asDouble());
+        
+        else
+        	return new Subtraction(left.asInt() - left.asInt());
 	}
 
 	@Override
@@ -212,16 +254,15 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     
     //basic atom overrides
-    /*
     @Override
     public Expression visitInt(IntContext ctx) {
         return new Number(Integer.valueOf(ctx.getText()));
     }
-    */
+    
     
     @Override
-    public Expression visitFloat(FloatContext ctx) {
-        return new Number(Float.valueOf(ctx.getText()));
+    public Expression visitDouble(DoubleContext ctx) {
+        return new Number(Double.valueOf(ctx.getText()));
     }
 	
 }

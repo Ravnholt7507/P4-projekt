@@ -50,37 +50,12 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhile_stat(ExprParser.While_statContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ExprParser#array}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArray(ExprParser.ArrayContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#element}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitElement(ExprParser.ElementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#value}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitValue(ExprParser.ValueContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code AndExpr}
 	 * labeled alternative in {@link ExprParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAndExpr(ExprParser.AndExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Float}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFloat(ExprParser.FloatContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code Multiplication}
 	 * labeled alternative in {@link ExprParser#expr}.
@@ -137,6 +112,20 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitRelationalExpr(ExprParser.RelationalExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Double}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDouble(ExprParser.DoubleContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Int}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInt(ExprParser.IntContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code OrExpr}
 	 * labeled alternative in {@link ExprParser#expr}.
