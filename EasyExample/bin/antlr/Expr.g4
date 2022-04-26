@@ -30,6 +30,8 @@ stat_block
 while_stat: 'while' '(' expr ')' stat_block
  ;
  
+ 
+ /* 
 array: '[' ']' 
      | '[' element ']'
      ;
@@ -41,7 +43,7 @@ element: value
 value: array 
      | INT
      ;
-
+*/
 
 /* ANTLR resolves ambiguities by first alternative given */
 
@@ -55,8 +57,8 @@ expr: expr '*' expr                 		# Multiplication
  	| expr OR expr                          # OrExpr
  	| BOOL									# Bool
     | ID                            		# Variable
-    | FLOAT                         		# Float
-//    | INT									# Int
+    | DOUBLE 	                      		# Double
+    | INT									# Int
     ;
 
 print:
@@ -76,14 +78,15 @@ GTEQ : '>=';
 LTEQ : '<=';
 
 /* Types */
-BOOL : ('true' | 'false');
+BOOL 
+: ('true' | 'false');
 
-// INT : '0' | '-'?[1-9][0-9]*;
+INT
+: '0' | '-'?[1-9][0-9]*;
 
-FLOAT
+DOUBLE
  : [0-9]+ '.' [0-9]* 
  | '.' [0-9]+
- | '0' | '-'?[1-9][0-9]*
  ;
  
  /* Basics */
