@@ -26,6 +26,18 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDecl(ExprParser.DeclContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#arraydecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArraydecl(ExprParser.ArraydeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#array_init}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_init(ExprParser.Array_initContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#if_stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -49,6 +61,36 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitWhile_stat(ExprParser.While_statContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#train}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTrain(ExprParser.TrainContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#trainParams}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTrainParams(ExprParser.TrainParamsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#epochs}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEpochs(ExprParser.EpochsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#array}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray(ExprParser.ArrayContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#value}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitValue(ExprParser.ValueContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code AndExpr}
 	 * labeled alternative in {@link ExprParser#expr}.

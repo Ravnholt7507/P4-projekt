@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import antlr.ExprBaseVisitor;
 import antlr.ExprParser;
@@ -20,6 +22,7 @@ import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SubtractionContext;
 import antlr.ExprParser.TrainContext;
+import antlr.ExprParser.ValueContext;
 import antlr.ExprParser.VariableContext;
 import antlr.ExprParser.While_statContext;
 import antlr.ExprParser.Condition_blockContext;
@@ -93,13 +96,30 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitEqualityExpr(EqualityExprContext ctx) {
         Expression left = this.visit(ctx.expr(0));
         Expression right = this.visit(ctx.expr(1));
-        
+
+        // used to compare floating point numbers
+        final double SMALL_VALUE = 0.00000000000001;
+
         switch(ctx.op.getType()) 
         {
         case ExprParser.EQ: 
-        	return new RelationalExpr(left.asDouble() == right.asDouble());
+        	if (left.isDouble() && right.isDouble())
+        		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) < SMALL_VALUE);
+        	else if (!left.isDouble() && !right.isDouble())
+        		return new RelationalExpr(left.asInt() == right.asInt());
+        	else if (left.isDouble() && !right.isDouble())
+        		return new RelationalExpr(Math.abs(left.asDouble() - right.asInt()) < SMALL_VALUE);
+        	else if (!left.isDouble() && right.isDouble())
+        		return new RelationalExpr(Math.abs(left.asInt() - right.asDouble()) < SMALL_VALUE);			
         case ExprParser.NEQ: 
-        	return new RelationalExpr(left.asDouble() != right.asDouble());
+        	if (left.isDouble() && right.isDouble()) 
+        		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) >= SMALL_VALUE);
+        	else if (!left.isDouble() && !right.isDouble())
+        		return new RelationalExpr(left.asInt() == right.asInt());
+        	else if (left.isDouble() && !right.isDouble())
+        		return new RelationalExpr(Math.abs(left.asDouble() - right.asInt()) < SMALL_VALUE);
+        	else if (!left.isDouble() && right.isDouble())
+        		return new RelationalExpr(Math.abs(left.asInt() - right.asDouble()) < SMALL_VALUE);
         default:
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
         }
@@ -156,14 +176,14 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         if (left.isDouble() || right.isDouble()) {
         	if (right.asDouble() == 0)
         	{
-        		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
+        		throw new RuntimeException("Man må ikke dividere med 0");
         	}
         	return new Division(left.asDouble() / right.asDouble());
         }
         else
         	if (right.asInt() == 0)
         	{
-        		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
+        		throw new RuntimeException("Man må ikke dividere med 0");
         	}
         return new Division(left.asInt() / right.asInt());
 	}
@@ -240,7 +260,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitWhile_stat(While_statContext ctx) {
 
         Expression value = this.visit(ctx.expr());
-
         while(value.asBoolean()) {
 
             // evaluate the code block
@@ -251,6 +270,77 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         }
 
         return While_stat.VOID;
+    }
+    
+    @Override
+    public Expression visitTrain(TrainContext ctx) {
+
+        String actfunc = ctx.trainParams().ACTFUNC().getText();
+        int epochs = Integer.valueOf(ctx.trainParams().epochs().getText());
+        
+        List<ValueContext> Placeholder = ctx.trainParams().array().value();
+        int size = Placeholder.size();
+        
+        double input_array[] = new double [size];
+    
+        for(int i = 0; i < size; i++) {
+        	input_array[i] = Double.valueOf(Placeholder.get(i).getText());
+        }
+        
+        double weight_array_real[][] = { { 0.3, 0.1 }, { 0.5, 0.2 } };
+        
+     //   for(int i = 0; i < epochs; i++){
+        
+            feedforward(input_array, weight_array_real, size);
+            //backpropagate()
+      //  }
+        return super.visitTrain(ctx);
+    }
+
+    public void feedforward(double[] input_array, double[][] weight_array, int size){
+        double[] result;
+        Dotproduct2(input_array, weight_array, size);
+        
+        result = Sigmoid(Dotproduct(input_array, weight_array, size));  
+    }
+    
+    public double[] Sigmoid(double[] x){
+    //	System.out.print(1/( 1 + Math.pow(Math.E,(-1*x))));
+    	for (int i = 0; i < x.length; i++ ) {
+    		x[i] = 1/( 1 + Math.pow(Math.E,(-1*x[i])));
+    	}
+    	System.out.print(x[0] + "\n" + x[1]);
+        return x;
+    }
+    
+    // b = { { 0.3, 0.1 }, { 0.5, 0.2 }, {}};
+    // a = { 0.5 , 0,3 }
+    public double[] Dotproduct(double[]a, double[][] b, int layersize){
+        double[] nodes = new double[layersize];
+        for (int i = 0; i < b.length; i++) {
+            for(int j = 0; j < a.length; j++) {
+                nodes[i] += a[j] * b[i][j];
+                System.out.print("input:" + a[j] + " weights:" + b[i][j] + " = " + nodes[i] + "\n");
+            }	
+        }
+        System.out.print("\n");
+        return nodes;   
+    }
+    
+    public double[][] Dotproduct2(double[][] a, double[][] b, int layersize){
+       double[][] nodes = new double[a.length][b[0].length]; 
+        for (int i = 0; i < a.length; i++) {
+            for(int j = 0; j < b.length; j++) {
+            	int sum = 0;
+            	for (int k = 0; k < a[i].length; k++) {
+            		sum += a[j][k] * b[i][j];
+            	}
+            	nodes[i][j] = sum; 
+            	System.out.print(nodes[i][j]);
+            }	
+        }
+        System.out.print("\n");
+        return nodes;   
     }
     
     
@@ -265,52 +355,32 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
-	
-    @Override
-    public Expression visitTrain(TrainContext ctx) {
-
-        String actfunc = ctx.trainParams().ACTFUNC().getText();
-        int epochs = Integer.valueOf(ctx.trainParams().epochs().getText());
-        Object input_array[] = ctx.trainParams().array().getTokens(ctx.trainParams().array().getChildCount()).toArray();
-        
-        System.out.print("test");
-
-        Object weight_array[];
-        weight_array = new Object[input_array.length];
-        
-        for (int i = 0; i < input_array.length; i++){
-            weight_array[i] = 0.5;
-        }
-        System.out.print(epochs);
-        for(int i = 0; i < epochs; i++){
-            feedforward(input_array, weight_array);
-            //backpropagate()
-        }
-        return super.visitTrain(ctx);
-    }
-    public double feedforward(Object[] input_array, Object[] weight_array){
-        double result = 0;
-        result = Sigmoid(Dotproduct(input_array, weight_array));
-        System.out.print("ff");
-        return result;  
-    }
-        public double Sigmoid(Object dotProduct){
-        	 System.out.print("sigmoid");
-        return (1/( 1 + Math.pow(Math.E,(-1*(double)dotProduct))));
-    }
-    public double Dotproduct(Object[] a, Object[] b){
-        if (a.length != b.length) {
-            throw new IllegalArgumentException(
-                    "Error computing dotProduct in Utilities.dotProduct: arrays should have the same length");
-        }
-        double sp = 0;
-        for (int i = 0; i < a.length; i++) {
-            for(int j = 0; j < b.length; j++) {
-                sp += (double) a[i] * (double) b[j];
-            }
-        }
-        System.out.print("dotp");
-        return sp;
-    }
+    
 }
 
+
+/*
+public double Dotproduct(double[] a, double[] b) 
+{
+	if (a.length != b.length) {
+	    throw new IllegalArgumentException(
+	            "Error computing dotProduct in Utilities.dotProduct: arrays should have the same length");
+	}
+	double sp = 0;
+	for (int i = 0; i < a.length; i++) {
+	    sp += a[i] * b[i];
+	}
+	return sp;
+}
+
+    public double[][] initMatrix(int rows, int cols){
+    	double[][] Matrix = new double[rows][cols];
+    	for (int i =0; i< rows; i++){
+    		for(int j = 0; j < cols; j++) {
+    			Matrix[i][j] = 0;
+    		}
+    	}
+    	return Matrix;
+    }
+
+*/

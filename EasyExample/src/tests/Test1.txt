@@ -1,3 +1,1 @@
-a = 4.3;
-b = 3;
-Print(a+b);
+train(sigmoid,5,array[0.5, 0.3])

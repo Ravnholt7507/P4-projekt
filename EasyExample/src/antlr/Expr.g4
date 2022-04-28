@@ -15,6 +15,13 @@ decl
  : ID '=' expr ';'
  ;
  
+arraydecl
+ : ID '[' (INT)? ']' ('=' '{' array_init '}')? ';'
+ ;
+ 
+array_init: DOUBLE ( ',' DOUBLE )*
+ ;
+ 
  if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
  ;
 
@@ -29,7 +36,9 @@ stat_block
 
 while_stat: 'while' '(' expr ')' stat_block
  ;
- 
+
+
+/* TRAIN */
 train: TRAIN '(' trainParams ')'
 ;
 
@@ -39,18 +48,11 @@ trainParams: ACTFUNC ',' epochs ',' array
 epochs: INT
 ;
  
- 
-
-array: ARRAY '[' ']' 
-     | ARRAY '[' element ']'
+/* ARRAYS */
+array: ARRAY '[' value (',' value)* ']'
      ;
 
-element: value 
-       | value ',' element
-       ;
-
-value: array 
-     | INT
+value: INT | DOUBLE
      ;
 
 
@@ -75,10 +77,10 @@ print:
  ;
 
 /* Tokens */
+
 TRAIN:'train';
 ACTFUNC:'sigmoid';
 ARRAY:'array';
-
 
  /* Boolean operators */
 OR : '||';
