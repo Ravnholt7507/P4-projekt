@@ -19,6 +19,10 @@ public abstract class Expression {
         return value instanceof Double;
     }
     
+    public boolean isString() {
+        return value instanceof String;
+    }
+    
     public Boolean asBoolean() {
         return (Boolean) value;
     }

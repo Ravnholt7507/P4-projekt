@@ -1,9 +1,12 @@
 package expression;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -19,7 +22,9 @@ import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
 import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.PrintContext;
+import antlr.ExprParser.ReadContext;
 import antlr.ExprParser.RelationalExprContext;
+import antlr.ExprParser.StringContext;
 import antlr.ExprParser.SubtractionContext;
 import antlr.ExprParser.TrainContext;
 import antlr.ExprParser.ValueContext;
@@ -161,8 +166,19 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         else if (!left.isDouble() && right.isDouble())
         	return new Addition(left.asInt() + right.asDouble());
         
+        else if (left.isString() && right.isString())
+            return new Addition(left.toString() + right.toString());
+
+        else if (!left.isString() && right.isString())
+        throw new RuntimeException("Strings skal lægges til strings");
+
+        else if (left.isString() && !right.isString())
+        throw new RuntimeException("Strings skal lægges til strings");
+        
         else
         	return new Addition(left.asInt() + left.asInt());
+        
+        
 	}
 	
 	@Override
@@ -274,7 +290,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override
     public Expression visitTrain(TrainContext ctx) {
-
         String actfunc = ctx.trainParams().ACTFUNC().getText();
         int epochs = Integer.valueOf(ctx.trainParams().epochs().getText());
         
@@ -287,62 +302,47 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         	input_array[i] = Double.valueOf(Placeholder.get(i).getText());
         }
         
-        double weight_array_real[][] = { { 0.3, 0.1 }, { 0.5, 0.2 } };
+        double[] arr = {0.1, 0.3};
+    
+        NN NeuralNetwork = new NN(2,3,1);
         
-     //   for(int i = 0; i < epochs; i++){
+        NeuralNetwork.feedforward(arr);
         
-            feedforward(input_array, weight_array_real, size);
-            //backpropagate()
-      //  }
+        
+        
         return super.visitTrain(ctx);
     }
 
-    public void feedforward(double[] input_array, double[][] weight_array, int size){
-        double[] result;
-        Dotproduct2(input_array, weight_array, size);
-        
-        result = Sigmoid(Dotproduct(input_array, weight_array, size));  
-    }
-    
-    public double[] Sigmoid(double[] x){
-    //	System.out.print(1/( 1 + Math.pow(Math.E,(-1*x))));
-    	for (int i = 0; i < x.length; i++ ) {
-    		x[i] = 1/( 1 + Math.pow(Math.E,(-1*x[i])));
-    	}
-    	System.out.print(x[0] + "\n" + x[1]);
-        return x;
-    }
-    
-    // b = { { 0.3, 0.1 }, { 0.5, 0.2 }, {}};
-    // a = { 0.5 , 0,3 }
-    public double[] Dotproduct(double[]a, double[][] b, int layersize){
-        double[] nodes = new double[layersize];
-        for (int i = 0; i < b.length; i++) {
-            for(int j = 0; j < a.length; j++) {
-                nodes[i] += a[j] * b[i][j];
-                System.out.print("input:" + a[j] + " weights:" + b[i][j] + " = " + nodes[i] + "\n");
-            }	
+
+    public Expression visitRead(ReadContext ctx) {
+        try {
+            String left = ctx.getChild(2).getText();
+            String right = ctx.getChild(4).getText();
+            left = left.substring(1,left.length()-1);
+            right = right.substring(1, right.length()-1);
+            File myFile = new File(left);
+
+            Scanner myFileReader = new Scanner(myFile);
+            myFileReader.useDelimiter(right);
+            int index = 0;
+            List Inputdata = new ArrayList<Double>();
+
+
+            while(myFileReader.hasNextLine())
+            {
+                Inputdata.add(Double.parseDouble(myFileReader.next()));
+                System.out.println(Inputdata.get(index));
+                index++;
+            }
+            System.out.println(Inputdata.get(4).getClass());
+            myFileReader.close();
+        return null;
         }
-        System.out.print("\n");
-        return nodes;   
-    }
-    
-    public double[][] Dotproduct2(double[][] a, double[][] b, int layersize){
-       double[][] nodes = new double[a.length][b[0].length]; 
-        for (int i = 0; i < a.length; i++) {
-            for(int j = 0; j < b.length; j++) {
-            	int sum = 0;
-            	for (int k = 0; k < a[i].length; k++) {
-            		sum += a[j][k] * b[i][j];
-            	}
-            	nodes[i][j] = sum; 
-            	System.out.print(nodes[i][j]);
-            }	
+        catch (FileNotFoundException e) {
+            System.out.println("Filen findes ikke");
+        return null;
         }
-        System.out.print("\n");
-        return nodes;   
     }
-    
     
     //basic atom overrides
     @Override
@@ -350,37 +350,22 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return new Number(Integer.valueOf(ctx.getText()));
     }
     
+    @Override
+    public Expression visitString(StringContext ctx) {
+        String value = ctx.getText();
+        value = value.substring(1, value.length() - 1).replace("\"\"", "\"");
+        return new String_type(value);
+    } 
+
     
     @Override
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
     
+    
+    
 }
 
 
-/*
-public double Dotproduct(double[] a, double[] b) 
-{
-	if (a.length != b.length) {
-	    throw new IllegalArgumentException(
-	            "Error computing dotProduct in Utilities.dotProduct: arrays should have the same length");
-	}
-	double sp = 0;
-	for (int i = 0; i < a.length; i++) {
-	    sp += a[i] * b[i];
-	}
-	return sp;
-}
 
-    public double[][] initMatrix(int rows, int cols){
-    	double[][] Matrix = new double[rows][cols];
-    	for (int i =0; i< rows; i++){
-    		for(int j = 0; j < cols; j++) {
-    			Matrix[i][j] = 0;
-    		}
-    	}
-    	return Matrix;
-    }
-
-*/

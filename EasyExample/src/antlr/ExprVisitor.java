@@ -120,33 +120,12 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVariable(ExprParser.VariableContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code Subtraction}
+	 * Visit a parse tree produced by the {@code String}
 	 * labeled alternative in {@link ExprParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSubtraction(ExprParser.SubtractionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code EqualityExpr}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEqualityExpr(ExprParser.EqualityExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Bool}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBool(ExprParser.BoolContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Division}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDivision(ExprParser.DivisionContext ctx);
+	T visitString(ExprParser.StringContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code RelationalExpr}
 	 * labeled alternative in {@link ExprParser#expr}.
@@ -176,9 +155,43 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitOrExpr(ExprParser.OrExprContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code Subtraction}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSubtraction(ExprParser.SubtractionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code EqualityExpr}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEqualityExpr(ExprParser.EqualityExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Bool}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBool(ExprParser.BoolContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Division}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDivision(ExprParser.DivisionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#print}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitPrint(ExprParser.PrintContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#read}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRead(ExprParser.ReadContext ctx);
 }
