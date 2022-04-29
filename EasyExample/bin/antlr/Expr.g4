@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read)+ EOF            # Program
     ;
 
 decl		
@@ -37,7 +37,6 @@ stat_block
 while_stat: 'while' '(' expr ')' stat_block
  ;
 
-
 /* TRAIN */
 train: TRAIN '(' trainParams ')'
 ;
@@ -54,7 +53,7 @@ array: ARRAY '[' value (',' value)* ']'
 
 value: INT | DOUBLE
      ;
-
+   
 
 /* ANTLR resolves ambiguities by first alternative given */
 
@@ -74,6 +73,10 @@ expr: expr '*' expr                 		# Multiplication
 
 print:
  'Print' '(' expr ')' ';'
+ ;
+ 
+read:
+ 'read' '(' STRING ',' STRING ')' ';'
  ;
 
 /* Tokens */
@@ -104,8 +107,14 @@ DOUBLE
  | '.' [0-9]+
  ;
  
+
+ 
  /* Basics */
  ID : [a-z][a-zA-Z0-9]*;
+
+STRING
+ : '"' (~["\r\n] | '""')* '"'
+ ;
 
 INT_TYPE : 'INT';
 COMMENT : '--' ~[\r\n]* -> skip;
