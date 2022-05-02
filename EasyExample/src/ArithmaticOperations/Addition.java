@@ -1,6 +1,7 @@
 package ArithmaticOperations;
 
 import expression.Expression;
+import expression.Type;
 
 public class Addition extends Expression {
 	
@@ -8,4 +9,7 @@ public class Addition extends Expression {
 		super(result);
 	}
 	
+	public Addition(Type type) {
+		super(type);
+	}
 }

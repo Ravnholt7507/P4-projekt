@@ -1,6 +1,7 @@
 package Types;
 
 import expression.Expression;
+import expression.Type;
 
 public class String_type extends Expression {
 
@@ -8,4 +9,7 @@ public class String_type extends Expression {
         super(result);
     }
 
+    public String_type(Type type) {
+        super(type);
+    }
 }

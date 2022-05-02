@@ -1,6 +1,7 @@
 package Statements;
 
 import expression.Expression;
+import expression.Type;
 
 public class If_stat extends Expression {
 
@@ -8,5 +9,9 @@ public class If_stat extends Expression {
 	 
 	 public If_stat(Object result) {
 		 super(result);
+	 }
+	 
+	 public If_stat(Type type) {
+		 super(type);
 	 }
 }

@@ -1,6 +1,7 @@
 package BooleanOperations;
 
 import expression.Expression;
+import expression.Type;
 
 public class RelationalExpr extends Expression {
 
@@ -8,4 +9,7 @@ public class RelationalExpr extends Expression {
 		super(value);
 	}
 	
+	public RelationalExpr(Type type) {
+		super(type);
+	}
 }

@@ -3,9 +3,11 @@ package expression;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 
 import org.antlr.v4.runtime.Token;
@@ -21,9 +23,11 @@ import antlr.ExprParser.DivisionContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
 import antlr.ExprParser.MultiplicationContext;
+import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
 import antlr.ExprParser.RelationalExprContext;
+import antlr.ExprParser.SetupContext;
 import antlr.ExprParser.StringContext;
 import antlr.ExprParser.SubtractionContext;
 import antlr.ExprParser.TrainContext;
@@ -47,6 +51,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     private Map<String, Expression> memory = new HashMap<String, Expression>();
 
 	public List<String> semanticErrors;
+	
+	private Map<String, TrainingSet> DataSets = new HashMap<String, TrainingSet>();
+	
 	
 	public EvalVisitor() {
 		memory = new HashMap<String, Expression>();
@@ -288,28 +295,80 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return While_stat.VOID;
     }
     
+    public static double[] getRandom(double[][] array) {
+        int rnd = new Random().nextInt(array.length);
+        return array[rnd];
+    }
+    
+    public static double[] getExpected(double[] array) {
+    	double[][] Expected = {{0.1,0.3,0.5}, {0.2,0.4,0.6}, {0.1,0.5,0.9}, {0.2,0.5,0.7}};
+        if (array[0] == 1 && array[1] == 0)
+        	return Expected[0];
+        else if  (array[0] == 0 && array[1] == 1)
+        	return Expected[1];
+        else if (array[0] == 1 && array[1] == 1)
+        	return Expected[2];
+        else if (array[0] == 0 && array[1] == 0)
+        	return Expected[3];
+		return null;
+    }
+    
+    @Override
+    public Expression visitNeural_network(Neural_networkContext ctx) {
+    	String id = ctx.ID().getText();
+    	int input = Integer.valueOf(ctx.INT(0).getText());
+    	int hidden = Integer.valueOf(ctx.INT(1).getText());
+    	int output = Integer.valueOf(ctx.INT(2).getText());
+    	
+    	Expression NeuralNetwork = new NN(input, hidden, output);
+    	
+    	return memory.put(id, NeuralNetwork);
+    }
+    
+    @Override
+    public Expression visitSetup(SetupContext ctx) {
+    	
+    	List<Double> Inputs = new ArrayList <Double>();
+    	List<Double> Expected = new ArrayList <Double>();
+    	
+    	for (int i = 0; ctx.array(0).value().size() > i; i++)
+    		Inputs.add(Double.valueOf(ctx.array(0).value(i).getText()));
+    		
+    	for (int i = 0; ctx.array(1).value().size() > i; i++)
+			Expected.add(Double.valueOf(ctx.array(1).value(i).getText()));
+    	
+    	String actfunc = ctx.ACTFUNC().getText();
+    	String id = ctx.ID().getText();
+    	
+    	TrainingSet mySet = new TrainingSet(Inputs, Expected);
+    	
+    	return DataSets.put(id, mySet); 
+    }
+    
+    public double[] ToArray(List<Double> list) {
+		return list.stream().mapToDouble(d -> d).toArray();
+    }
+    
+    
     @Override
     public Expression visitTrain(TrainContext ctx) {
-        String actfunc = ctx.trainParams().ACTFUNC().getText();
-        int epochs = Integer.valueOf(ctx.trainParams().epochs().getText());
+        int epochs = Integer.valueOf(ctx.epochs().INT().getText());
+        String id = ctx.ID().getText();
+        NN NeuralNetwork = (NN) memory.get(id);
         
-        List<ValueContext> Placeholder = ctx.trainParams().array().value();
-        int size = Placeholder.size();
+        double[] input = ToArray(DataSets.get(id).input);
+        double[] target = ToArray(DataSets.get(id).target);
         
-        double input_array[] = new double [size];
-    
-        for(int i = 0; i < size; i++) {
-        	input_array[i] = Double.valueOf(Placeholder.get(i).getText());
-        }
-        
-        double[] arr = {0.1, 0.3};
-    
-        NN NeuralNetwork = new NN(2,3,1);
-        
-        NeuralNetwork.feedforward(arr);
-        
-        
-        
+       
+          	for (int j = 0; j<epochs; j++) {
+    		
+            NeuralNetwork.train(input, target);		
+    	}
+    	
+        for (int i = 0; i<1; i++) {
+    	   System.out.println("input:" + Arrays.toString(input) + " expected: " +
+    	   Arrays.toString(target) + " Output: " + Arrays.toString(NeuralNetwork.feedforward(input)));
+       }
         return super.visitTrain(ctx);
     }
 
@@ -362,10 +421,16 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
-    
-    
-    
+
 }
+
+/*
+double[][] Input = {{1,0}, {0,1}, {1,1}, {0,0}};
+
+double[][] Expected = {{0.1,0.3,0.5}, {0.2,0.4,0.6}, {0.1,0.5,0.9}, {0.2,0.5,0.7}};
+
+NN NeuralNetwork = new NN(2,3,3);
+*/
 
 
 

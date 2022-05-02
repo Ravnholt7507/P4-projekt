@@ -2,9 +2,17 @@ package expression;
 
 public abstract class Expression {
 	Object value;
+	public Type type;
 	
     public Expression(Object value) {
         this.value = value;
+    }
+    
+    public Expression() {
+    }
+    
+    public Expression(Type type) {
+        this.type = type;
     }
     
     public Double asDouble() {

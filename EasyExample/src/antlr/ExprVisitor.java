@@ -44,6 +44,18 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIf_stat(ExprParser.If_statContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#neural_network}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNeural_network(ExprParser.Neural_networkContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#setup}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSetup(ExprParser.SetupContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#condition_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -67,12 +79,6 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTrain(ExprParser.TrainContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#trainParams}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTrainParams(ExprParser.TrainParamsContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExprParser#epochs}.
 	 * @param ctx the parse tree

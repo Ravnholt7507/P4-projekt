@@ -1,1 +1,5 @@
-train(sigmoid,5,array[0.1, 0.3])
+NeuralNetwork ourModel(2,3,3)
+
+ourModel.setup(array[0,1] , array[0.2,0.3,0.5] , sigmoid)
+
+ourModel.train(1000)

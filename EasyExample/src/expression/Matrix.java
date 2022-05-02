@@ -42,9 +42,11 @@ class Matrix {
 
   public double[] toArray() {
     double[] arr = new double[this.data.length*this.data[0].length];
+    int local = 0;
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
-        arr[j] = this.data[i][j];
+        arr[local] = this.data[i][j];
+        local++;
       }
     }
     return arr;
@@ -53,8 +55,7 @@ class Matrix {
   public void randomize() {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
-       // this.data[i][j] = (Math.round((Math.random() * 2 - 1)*100.0)/100.0);
-    	  this.data[i][j] = 0.500;
+        this.data[i][j] = (Math.round((Math.random() * 2 - 1)*100.0)/100.0);
       }
     }
   }
@@ -84,7 +85,7 @@ class Matrix {
     }
     return result;
   }
-  
+
 
   public static Matrix DotProduct(Matrix a, Matrix b) {
     if (a.cols != b.rows) {
@@ -95,7 +96,7 @@ class Matrix {
     for (int i = 0; i < result.rows; i++) {
       for (int j = 0; j < result.cols; j++) {
         // Dot product of values in column
-        int sum = 0;
+        double sum = 0;
         for (int k = 0; k < a.cols; k++) {
           sum += a.data[i][k] * b.data[k][j];
         }
@@ -130,6 +131,17 @@ class Matrix {
 	        this.data[i][j] = (1/( 1 + Math.pow(Math.E,(-1*this.data[i][j]))));
 	      }
       }
+  }
+  
+  public static Matrix dSigmoid(Matrix m){
+	  Matrix result = new Matrix(m.rows, m.cols);
+      for (int i = 0; i < m.rows; i++) {
+	      for (int j = 0; j < m.cols; j++) {
+	    	double val = m.data[i][j];
+	        result.data[i][j] = val*(1-val);
+	      }
+      }
+      return result;
   }
   
   public String ToString() 
