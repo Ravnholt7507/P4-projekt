@@ -56,6 +56,24 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSetup(ExprParser.SetupContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#dataset}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDataset(ExprParser.DatasetContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#add_data}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAdd_data(ExprParser.Add_dataContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#read_data}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRead_data(ExprParser.Read_dataContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#condition_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

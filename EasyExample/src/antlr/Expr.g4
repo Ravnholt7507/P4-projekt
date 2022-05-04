@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data)+ EOF            # Program
     ;
 
 decl		
@@ -22,7 +22,7 @@ arraydecl
 array_init: DOUBLE ( ',' DOUBLE )*
  ;
  
- if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
+if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
  ;
 
 neural_network
@@ -30,12 +30,21 @@ neural_network
  ;
 
 setup
- : ID '.' SETUP '(' array ',' array ',' ACTFUNC ')'
+ : ID '.' SETUP '(' DATASET ID ')' ';'
  ;
  
-
-
-
+dataset
+ : DATASET ID ';'
+ ;
+ 
+add_data
+ : ID '.' ADDDATA '(' (array ',' array ( ';' array ',' array)* )?  ')' ';'
+ ;
+ 
+read_data
+ : ID '.' READDATA '(' STRING ',' STRING  ',' STRING ')' ';'
+ ;
+ 
 condition_block
  : '(' expr ')' stat_block
  ;
@@ -50,10 +59,10 @@ while_stat: 'while' '(' expr ')' stat_block
 
 /* TRAIN */
 train: ID '.' TRAIN '(' epochs ')'
-;
+ ;
 
 epochs: INT
-;
+ ; 
  
 /* ARRAYS */
 array: ARRAY '[' value (',' value)* ']'
@@ -85,7 +94,7 @@ print:
  ;
  
 read:
- 'read' '(' STRING ',' STRING ')' ';'
+ 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
  ;
 
 /* Tokens */
@@ -95,6 +104,9 @@ ACTFUNC:'sigmoid' | 'Sigmoid';
 ARRAY:'array' | 'Array';
 NEURALNETWORK:'NeuralNetwork';
 SETUP:'Setup' | 'setup';
+DATASET: 'Dataset' | 'dataset';
+ADDDATA: 'AddData' | 'addData';
+READDATA: 'ReadData' | 'Readdata' | 'readdata';
 
  /* Boolean operators */
 OR : '||';
@@ -113,6 +125,7 @@ BOOL
 INT
 : '0' | '-'?[1-9][0-9]*;
 
+
 DOUBLE
  : [0-9]+ '.' [0-9]* 
  | '.' [0-9]+
@@ -121,7 +134,7 @@ DOUBLE
 
  
  /* Basics */
- ID : [a-z][a-zA-Z0-9]*;
+ ID : [a-zA-Z]*;
 
 STRING
  : '"' (~["\r\n] | '""')* '"'

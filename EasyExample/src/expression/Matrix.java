@@ -123,7 +123,6 @@ class Matrix {
         }
       }
     }
-
   
   public void Sigmoid(){
       for (int i = 0; i < this.rows; i++) {

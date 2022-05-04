@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -17,6 +18,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import antlr.ExprBaseVisitor;
 import antlr.ExprParser;
+import antlr.ExprParser.Add_dataContext;
 import antlr.ExprParser.AdditionContext;
 import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DivisionContext;
@@ -26,6 +28,7 @@ import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
+import antlr.ExprParser.Read_dataContext;
 import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SetupContext;
 import antlr.ExprParser.StringContext;
@@ -35,6 +38,7 @@ import antlr.ExprParser.ValueContext;
 import antlr.ExprParser.VariableContext;
 import antlr.ExprParser.While_statContext;
 import antlr.ExprParser.Condition_blockContext;
+import antlr.ExprParser.DatasetContext;
 import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
 import antlr.ExprParser.AndExprContext;
@@ -43,6 +47,7 @@ import antlr.ExprParser.OrExprContext;
 import ArithmaticOperations.*;
 import BooleanOperations.*;
 import Statements.If_stat;
+import Statements.Read;
 import Statements.While_stat;
 import Types.*;
 
@@ -136,7 +141,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
         }
     }
-    
+
     
     //Arithmetic operations visitor
 	@Override
@@ -295,23 +300,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return While_stat.VOID;
     }
     
-    public static double[] getRandom(double[][] array) {
-        int rnd = new Random().nextInt(array.length);
-        return array[rnd];
-    }
     
-    public static double[] getExpected(double[] array) {
-    	double[][] Expected = {{0.1,0.3,0.5}, {0.2,0.4,0.6}, {0.1,0.5,0.9}, {0.2,0.5,0.7}};
-        if (array[0] == 1 && array[1] == 0)
-        	return Expected[0];
-        else if  (array[0] == 0 && array[1] == 1)
-        	return Expected[1];
-        else if (array[0] == 1 && array[1] == 1)
-        	return Expected[2];
-        else if (array[0] == 0 && array[1] == 0)
-        	return Expected[3];
-		return null;
-    }
+    //Language Specific Overrides
     
     @Override
     public Expression visitNeural_network(Neural_networkContext ctx) {
@@ -327,81 +317,145 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override
     public Expression visitSetup(SetupContext ctx) {
+    	String NetworkId = ctx.ID(0).getText();
+    	String DatasetId = ctx.ID(1).getText();
     	
-    	List<Double> Inputs = new ArrayList <Double>();
-    	List<Double> Expected = new ArrayList <Double>();
+    	Dataset set = (Dataset) memory.get(DatasetId);
+    	NN Network = (NN) memory.get(NetworkId);
+
+    	Network.setup(set);
     	
-    	for (int i = 0; ctx.array(0).value().size() > i; i++)
-    		Inputs.add(Double.valueOf(ctx.array(0).value(i).getText()));
-    		
-    	for (int i = 0; ctx.array(1).value().size() > i; i++)
-			Expected.add(Double.valueOf(ctx.array(1).value(i).getText()));
+    	memory.replace(NetworkId, Network);
     	
-    	String actfunc = ctx.ACTFUNC().getText();
-    	String id = ctx.ID().getText();
-    	
-    	TrainingSet mySet = new TrainingSet(Inputs, Expected);
-    	
-    	return DataSets.put(id, mySet); 
+    	return set; 
     }
-    
-    public double[] ToArray(List<Double> list) {
-		return list.stream().mapToDouble(d -> d).toArray();
-    }
-    
     
     @Override
     public Expression visitTrain(TrainContext ctx) {
+
         int epochs = Integer.valueOf(ctx.epochs().INT().getText());
         String id = ctx.ID().getText();
-        NN NeuralNetwork = (NN) memory.get(id);
         
-        double[] input = ToArray(DataSets.get(id).input);
-        double[] target = ToArray(DataSets.get(id).target);
+        NN Network = (NN) memory.get(id);
         
-       
-          	for (int j = 0; j<epochs; j++) {
-    		
-            NeuralNetwork.train(input, target);		
-    	}
+      	for (int j = 0; j<epochs; j++) {
+            int ranTuple = getRandom(Network.currentSet.inputs.size());
+      		double[] input = fromDouble(Network.currentSet.inputs.get(ranTuple));
+      		double[] target = fromDouble(Network.currentSet.targets.get(ranTuple));
+      		Network.train(input, target);		
+      	}
     	
-        for (int i = 0; i<1; i++) {
-    	   System.out.println("input:" + Arrays.toString(input) + " expected: " +
-    	   Arrays.toString(target) + " Output: " + Arrays.toString(NeuralNetwork.feedforward(input)));
+        for (int i = 0; i<Network.currentSet.inputs.size(); i++) {
+    	   System.out.println("input:" + Arrays.toString(Network.currentSet.inputs.get(i)) + " expected: " +
+    	   Arrays.toString(Network.currentSet.targets.get(i)) + " Output: " + Arrays.toString(Network.feedforward(fromDouble(Network.currentSet.inputs.get(i))))
+    	   );
        }
+        
         return super.visitTrain(ctx);
     }
 
+    @Override
+    public Expression visitDataset(DatasetContext ctx) {
+    	String id = ctx.ID().getText();
+    	Expression NewDataSet = new Dataset();
+    	return memory.put(id, NewDataSet);
+    }
+        
+    @Override
+    public Expression visitAdd_data(Add_dataContext ctx) {
+    	String id = ctx.ID().getText();
+		Dataset set = (Dataset) memory.get(id);
+    	int TupleCount = ctx.array().size() / 2;
+    	
+    	System.out.print(TupleCount);
+    	
+    	List<Double[]> input = new ArrayList<Double[]>();
+    	List<Double[]> output = new ArrayList<Double[]>();
+    		
+    	for (int i = 0; i < ctx.array().size(); i=i+2) {
+    		Double[] TempInput = new Double[ctx.array(i).value().size()];
+    		Double[] TempOutput = new Double[ctx.array(i+1).value().size()]; 
+    		
+    		for (int j=0; j<ctx.array(i).value().size(); j++) {
+    			TempInput[j] = Double.valueOf(ctx.array(i).value(j).getText());
+    		}
+    		
+    		for (int j=0; j<ctx.array(i+1).value().size(); j++) {
+    			TempOutput[j] = Double.valueOf(ctx.array(i+1).value(j).getText());
+    		}
+    		
+    		input.add(TempInput);
+    		output.add(TempOutput);
+    	}
+    	
+		set.addData(input, output);
+		
+		memory.replace(id, set);
+		
+    	return set;
+    }
 
+    @Override
+    public Expression visitRead_data(Read_dataContext ctx) {
+    	String id = ctx.ID().getText();
+		Dataset set = (Dataset) memory.get(id);
+		
+		
+		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\ReadInput.txt ", " @ " , " , ", "In");
+		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\ReadOutput.txt ", " @ " , " , ", "Out");
+    	
+    	return null;
+    }
+    
+    
+    
+    @Override
     public Expression visitRead(ReadContext ctx) {
         try {
-            String left = ctx.getChild(2).getText();
-            String right = ctx.getChild(4).getText();
-            left = left.substring(1,left.length()-1);
-            right = right.substring(1, right.length()-1);
-            File myFile = new File(left);
+            String Directory = ctx.getChild(2).getText();
+            String StringDelimiter = ctx.getChild(4).getText();
+            String DoubleDelimiter = ctx.getChild(6).getText();
+            Directory = Directory.substring(1,Directory.length()-1);
+            StringDelimiter = StringDelimiter.substring(1,StringDelimiter.length()-1);
+            DoubleDelimiter = DoubleDelimiter.substring(1, DoubleDelimiter.length()-1);
 
+            File myFile = new File(Directory);
             Scanner myFileReader = new Scanner(myFile);
-            myFileReader.useDelimiter(right);
-            int index = 0;
-            List Inputdata = new ArrayList<Double>();
+            myFileReader.useDelimiter(StringDelimiter);
 
+            List<double[]> Inputdata = new ArrayList<double[]>();
 
             while(myFileReader.hasNextLine())
             {
-                Inputdata.add(Double.parseDouble(myFileReader.next()));
-                System.out.println(Inputdata.get(index));
-                index++;
+                List<Double> innerList = new ArrayList<Double>();
+
+                String ReadNext = new String(myFileReader.next());
+                String[] SplitLine = ReadNext.split(DoubleDelimiter);
+
+                for ( int i = 0; i < SplitLine.length; i++) 
+                {
+                    innerList.add(Double.parseDouble(SplitLine[i]));
+                }
+                double[] ToarraY = innerList.stream().mapToDouble(d -> d).toArray();;
+                Inputdata.add(ToarraY);
+                System.out.println(Arrays.toString(Inputdata.get(0)));
             }
-            System.out.println(Inputdata.get(4).getClass());
             myFileReader.close();
-        return null;
+            Expression myRead = new Read();
+            
+        return myRead;
         }
         catch (FileNotFoundException e) {
             System.out.println("Filen findes ikke");
         return null;
         }
     }
+    
+    
+    
+    
+    
+    
     
     //basic atom overrides
     @Override
@@ -416,21 +470,24 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return new String_type(value);
     } 
 
-    
     @Override
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
 
+    //Helper functions
+    public double[] ToArray(List<Double> list) {
+		return list.stream().mapToDouble(d -> d).toArray();
+    }
+    
+    public double[] fromDouble(Double[] arr) 
+    {
+		return Stream.of(arr).mapToDouble(Double::doubleValue).toArray();
+    }
+    
+    public static int getRandom(int length) {
+        int rnd = new Random().nextInt(length);
+        return rnd;
+    }
+    
 }
-
-/*
-double[][] Input = {{1,0}, {0,1}, {1,1}, {0,0}};
-
-double[][] Expected = {{0.1,0.3,0.5}, {0.2,0.4,0.6}, {0.1,0.5,0.9}, {0.2,0.5,0.7}};
-
-NN NeuralNetwork = new NN(2,3,3);
-*/
-
-
-

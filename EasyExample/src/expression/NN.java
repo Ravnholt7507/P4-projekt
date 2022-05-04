@@ -5,11 +5,15 @@ import java.util.Arrays;
 
 import org.antlr.v4.tool.ErrorSeverity;
 
+import Types.Dataset;
+
 public class NN extends Expression{
 	
 	private int input_nodes;
 	private int hidden_nodes;
 	private int output_nodes;
+	
+	public Dataset currentSet;
 	
 	public Matrix weights_ih;
 	private Matrix weights_ho;
@@ -37,6 +41,10 @@ public class NN extends Expression{
 	    this.bias_o = new Matrix(this.output_nodes, 1);
 	    this.bias_o.randomize();
 	    this.learning_rate = 0.1;   
+	}
+	
+	public void setup(Dataset Data) {
+		this.currentSet = Data;
 	}
 	
 	
@@ -115,3 +123,22 @@ public class NN extends Expression{
 	    this.bias_h.add(hidden_gradient);
 	  }
 }
+
+
+/*NeuralNetwork ourModel(10,20,1)
+
+Dataset swag;
+
+swag.addData(Array[1,0,0,0,0,0,0,0,0,0], Array[0.1] ; Array[0,1,0,0,0,0,0,0,0,0], Array[0.2]; 
+			 Array[0,0,1,0,0,0,0,0,0,0], Array[0.3] ; Array[0,0,0,1,0,0,0,0,0,0], Array[0.4];
+			 Array[0,0,0,0,1,0,0,0,0,0], Array[0.5] ; Array[0,0,0,0,0,1,0,0,0,0], Array[0.6]; 
+			 Array[0,0,0,0,0,0,1,0,0,0], Array[0.7] ; Array[0,0,0,0,0,0,0,1,0,0], Array[0.8];
+			 Array[0,0,0,0,0,0,0,0,1,0], Array[0.9]);
+			 
+
+ourModel.setup(Dataset swag);
+
+ourModel.train(100000)
+
+
+*/
