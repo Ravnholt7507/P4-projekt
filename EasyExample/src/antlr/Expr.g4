@@ -8,18 +8,11 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data | predict)+ EOF            # Program
     ;
-
+    
 decl		
  : ID '=' expr ';'
- ;
- 
-arraydecl
- : ID '[' (INT)? ']' ('=' '{' array_init '}')? ';'
- ;
- 
-array_init: DOUBLE ( ',' DOUBLE )*
  ;
  
 if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
@@ -30,7 +23,7 @@ neural_network
  ;
 
 setup
- : ID '.' SETUP '(' DATASET ID ')' ';'
+ : ID '.' SETUP '(' DATASET ID (',' ACTFUNC)? ')' ';'
  ;
  
 dataset
@@ -43,6 +36,10 @@ add_data
  
 read_data
  : ID '.' READDATA '(' STRING ',' STRING  ',' STRING ')' ';'
+ ;
+ 
+predict
+ : ID '.' PREDICT '(' array | ID ')' ';'
  ;
  
 condition_block
@@ -65,13 +62,17 @@ epochs: INT
  ; 
  
 /* ARRAYS */
-array: ARRAY '[' value (',' value)* ']'
+
+arraydecl
+ : ID '[' (INT | DOUBLE)? ']' ('=' array)? ';'
+ ;
+
+array: '{' value (',' value)* '}'
      ;
 
 value: INT | DOUBLE
      ;
    
-
 /* ANTLR resolves ambiguities by first alternative given */
 
 expr: expr '*' expr                 		# Multiplication
@@ -100,13 +101,14 @@ read:
 /* Tokens */
 
 TRAIN:'train';
-ACTFUNC:'sigmoid' | 'Sigmoid';
+ACTFUNC:'sigmoid' | 'Sigmoid' | 'Softmax' | 'SoftMax' | 'relu' | 'Relu' | 'ReLu';
 ARRAY:'array' | 'Array';
 NEURALNETWORK:'NeuralNetwork';
 SETUP:'Setup' | 'setup';
 DATASET: 'Dataset' | 'dataset';
 ADDDATA: 'AddData' | 'addData';
 READDATA: 'ReadData' | 'Readdata' | 'readdata';
+PREDICT: 'predict' | 'Predict';
 
  /* Boolean operators */
 OR : '||';

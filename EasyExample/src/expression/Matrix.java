@@ -143,6 +143,46 @@ class Matrix {
       return result;
   }
   
+  public void Relu(){
+      for (int i = 0; i < this.rows; i++) {
+	      for (int j = 0; j < this.cols; j++) {
+	        this.data[i][j] = this.data[i][j] <= 0 ? 0 : this.data[i][j];
+	      }
+      }
+  }
+  
+  public static Matrix dRelu(Matrix m){
+	  Matrix result = new Matrix(m.rows, m.cols);
+      for (int i = 0; i < m.rows; i++) {
+	      for (int j = 0; j < m.cols; j++) {
+	    	double val = m.data[i][j];
+	        result.data[i][j] =  result.data[i][j] <= 0 ? 0 : 1;
+	      }
+      }
+      return result;
+  }
+  
+  public void SoftMax(){
+      for (int i = 0; i < this.rows; i++) {
+	      for (int j = 0; j < this.cols; j++) {
+	        this.data[i][j] = Math.log(1.0 + Math.exp(this.data[i][j]));
+	      }
+      }
+  }
+
+  public static Matrix dSoftMax(Matrix m){
+	  Matrix result = new Matrix(m.rows, m.cols);
+      for (int i = 0; i < m.rows; i++) {
+	      for (int j = 0; j < m.cols; j++) {
+	    	double val = m.data[i][j];
+	        result.data[i][j] = val*(1-val);
+	      }
+      }
+      return result;
+  }
+  
+  
+  
   public String ToString() 
   {
 	  String string = "";

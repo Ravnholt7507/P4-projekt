@@ -42,8 +42,9 @@ import antlr.ExprParser.DatasetContext;
 import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
 import antlr.ExprParser.AndExprContext;
+import antlr.ExprParser.ArraydeclContext;
 import antlr.ExprParser.OrExprContext;
-
+import antlr.ExprParser.PredictContext;
 import ArithmaticOperations.*;
 import BooleanOperations.*;
 import Statements.If_stat;
@@ -317,6 +318,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override
     public Expression visitSetup(SetupContext ctx) {
+    	
+    	String ActFunc = ctx.ACTFUNC().getText();
     	String NetworkId = ctx.ID(0).getText();
     	String DatasetId = ctx.ID(1).getText();
     	
@@ -394,6 +397,36 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		
     	return set;
     }
+    
+    @Override 
+    public Expression visitPredict(PredictContext ctx) {
+        String id = ctx.ID().getText();
+        NN Network = (NN) memory.get(id);  
+        
+        Double[] input = new Double[ ctx.array().value().size()];
+        
+        for (int i = 0; i < ctx.array().value().size(); i++) {
+        	input[i] =  Double.parseDouble(ctx.array().value(i).getText());
+        }
+        System.out.print("Predict:" + Arrays.toString(Network.feedforward(fromDouble(input))));
+
+    	return Network;
+    }
+    
+   /* 
+    @Override
+    public Expression visitArraydecl(ArraydeclContext ctx) {
+    	String id = ctx.ID().getText();
+        ctx.array().getText();
+    	
+    	
+    	Expression array = new ArrayDouble_Type();
+    	
+    	memory.put(id, array);
+    	
+    	return null;
+    }
+    */
 
     @Override
     public Expression visitRead_data(Read_dataContext ctx) {
@@ -401,14 +434,12 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		Dataset set = (Dataset) memory.get(id);
 		
 		
-		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\ReadInput.txt ", " @ " , " , ", "In");
-		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\ReadOutput.txt ", " @ " , " , ", "Out");
+		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestInput ", " @ " , " , ", "In");
+		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestOutput ", " @ " , " , ", "Out");
     	
     	return null;
     }
-    
-    
-    
+  
     @Override
     public Expression visitRead(ReadContext ctx) {
         try {
@@ -451,29 +482,26 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         }
     }
     
-    
-    
-    
-    
-    
-    
     //basic atom overrides
     @Override
     public Expression visitInt(IntContext ctx) {
         return new Number(Integer.valueOf(ctx.getText()));
     }
     
+    
     @Override
     public Expression visitString(StringContext ctx) {
         String value = ctx.getText();
         value = value.substring(1, value.length() - 1).replace("\"\"", "\"");
         return new String_type(value);
-    } 
+    }
+    
 
     @Override
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
+    
 
     //Helper functions
     public double[] ToArray(List<Double> list) {

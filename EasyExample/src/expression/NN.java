@@ -125,6 +125,13 @@ public class NN extends Expression{
 }
 
 
+
+
+
+
+
+
+
 /*NeuralNetwork ourModel(10,20,1)
 
 Dataset swag;
