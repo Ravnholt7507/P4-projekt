@@ -1,5 +1,12 @@
-NeuralNetwork ourModel(2,3,3)
+NeuralNetwork ourModel(10,20,1)
 
-ourModel.setup(array[0,1] , array[0.2,0.3,0.5] , Sigmoid)
+Dataset swag;
 
-ourModel.train(1000)
+swag.Readdata("," , "@" , "Slacky");
+			 
+
+ourModel.setup(Dataset swag);
+
+ourModel.train(100000)
+
+
