@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data | predict)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
     ;
     
 decl		
@@ -35,7 +35,11 @@ add_data
  ;
  
 read_data
- : ID '.' READDATA '(' STRING ',' STRING  ',' STRING ')' ';'
+ : ID '.' READDATA '(' ID ',' ID  ',' STRING ',' STRING ')' ';'
+ ;
+ 
+read_image_data
+ : ID '.' READIMAGE '(' STRING* ')' ';'
  ;
  
 predict
@@ -45,7 +49,7 @@ predict
 condition_block
  : '(' expr ')' stat_block
  ;
-
+ 
 stat_block
  : '{' (expr | decl | print | if_stat | while_stat)* '}'
  | (expr | decl | print | if_stat | while_stat)
@@ -91,7 +95,7 @@ expr: expr '*' expr                 		# Multiplication
     ;
 
 print:
- 'Print' '(' expr ')' ';'
+ 'Print' '(' (expr | ID) ')' ';'
  ;
  
 read:
@@ -109,6 +113,7 @@ DATASET: 'Dataset' | 'dataset';
 ADDDATA: 'AddData' | 'addData';
 READDATA: 'ReadData' | 'Readdata' | 'readdata';
 PREDICT: 'predict' | 'Predict';
+READIMAGE: 'Readimage' | 'readimage';
 
  /* Boolean operators */
 OR : '||';
@@ -136,7 +141,7 @@ DOUBLE
 
  
  /* Basics */
- ID : [a-zA-Z]*;
+ ID : [a-zA-Z0-9]*;
 
 STRING
  : '"' (~["\r\n] | '""')* '"'
