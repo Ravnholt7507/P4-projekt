@@ -62,6 +62,12 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRead_data(ExprParser.Read_dataContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#read_image_data}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRead_image_data(ExprParser.Read_image_dataContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#predict}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

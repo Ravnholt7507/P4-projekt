@@ -40,7 +40,7 @@ public class NN extends Expression{
 	    
 	    this.bias_o = new Matrix(this.output_nodes, 1);
 	    this.bias_o.randomize();
-	    this.learning_rate = 0.1;   
+	    this.learning_rate = 0.05;   
 	}
 	
 	public void setup(Dataset Data) {
@@ -66,7 +66,7 @@ public class NN extends Expression{
 	    return output.toArray();
   	}
 	
-	public void train(double[] input_array, double[] target_array) {
+	public void train(double[] input_array, double[] target_array, int epoch) {
 		// Generating the Hidden Outputs
 	    Matrix inputs = Matrix.fromArrayToMatrix(input_array);
 	    Matrix hidden = Matrix.DotProduct(this.weights_ih, inputs);
@@ -86,15 +86,20 @@ public class NN extends Expression{
 	    // Calculate the error
 	    // ERROR = TARGETS - OUTPUTS
 	    Matrix output_errors = Matrix.subtract(targets, output);
+	    
+	    if(epoch % 1000 == 0) {
+	    	System.out.println("epoch: " + epoch);
+            System.out.println("Error" + output_errors.ToString());            
+       }
 
 	    // let gradient = outputs * (1 - outputs);
 	    // Calculate gradient
 	    Matrix gradients = Matrix.dSigmoid(output);
 	    
 	    gradients.multiply(output_errors);
-	    gradients.multiply(this.learning_rate);
-
-
+	    
+	    gradients.multiply(this.learning_rate);    
+	    
 	    // Calculate deltas 
 	    Matrix hidden_T = Matrix.transpose(hidden);
 	    Matrix weight_ho_deltas = Matrix.DotProduct(gradients, hidden_T);

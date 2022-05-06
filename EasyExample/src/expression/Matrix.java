@@ -151,6 +151,29 @@ class Matrix {
       }
   }
   
+  public static Matrix MSE(Matrix actual, Matrix prediction) {
+
+	    Matrix Tempresult = new Matrix(actual.rows, actual.cols);
+	    Matrix MSE = new Matrix(1, 1);
+	    
+	    for (int i = 0; i < Tempresult.rows; i++) {
+	      for (int j = 0; j < Tempresult.cols; j++) {
+	          Tempresult.data[i][j] = (Math.pow((actual.data[i][j] - prediction.data[i][j]),2));
+	      }
+	    }
+	 //   double mean = Mean(Tempresult);
+	 //   MSE.data[0][0] = mean;
+	    return Tempresult;
+	  }
+
+  public static double Mean(Matrix a) {
+      double mean = 0;
+      for(int i= 0; i < a.rows; i++) {
+          mean += a.data[i][0];
+      }
+      return mean / a.rows;
+  }
+  
   public static Matrix dRelu(Matrix m){
 	  Matrix result = new Matrix(m.rows, m.cols);
       for (int i = 0; i < m.rows; i++) {

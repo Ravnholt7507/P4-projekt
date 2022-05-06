@@ -24,6 +24,7 @@ import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DivisionContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
+import antlr.ExprParser.ExprContext;
 import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
@@ -251,8 +252,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     // log override
     @Override
     public Expression visitPrint(PrintContext ctx) {
-        Expression value = this.visit(ctx.expr());
-        System.out.println(value.value);
+    	Expression value = this.visit(ctx.expr());
+    	System.out.println(value.value);    		
         return value;
     }
 	
@@ -345,7 +346,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             int ranTuple = getRandom(Network.currentSet.inputs.size());
       		double[] input = fromDouble(Network.currentSet.inputs.get(ranTuple));
       		double[] target = fromDouble(Network.currentSet.targets.get(ranTuple));
-      		Network.train(input, target);		
+      		Network.train(input, target, j);		
       	}
     	
         for (int i = 0; i<Network.currentSet.inputs.size(); i++) {
@@ -413,29 +414,43 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	return Network;
     }
     
-   /* 
+   
     @Override
     public Expression visitArraydecl(ArraydeclContext ctx) {
     	String id = ctx.ID().getText();
-        ctx.array().getText();
+    
+    	Double[] numbers = new Double[ctx.array().value().size()];
     	
+    	for(int i = 0;i < ctx.array().value().size();i++)
+    	{
+    	    numbers[i] = Double.parseDouble(ctx.array().value(i).getText());
+    	}
+
+    	Expression array = new ArrayDouble_Type(numbers);
     	
-    	Expression array = new ArrayDouble_Type();
-    	
-    	memory.put(id, array);
-    	
-    	return null;
+    	return memory.put(id, array);
     }
-    */
+    
 
     @Override
     public Expression visitRead_data(Read_dataContext ctx) {
-    	String id = ctx.ID().getText();
+    	
+    	String idFile1 = ctx.getChild(4).getText();  	
+    	Expression filePath1 = memory.get(idFile1);
+
+    	String idFile2 = ctx.getChild(6).getText();  	
+    	Expression filePath2 = memory.get(idFile2);
+    	
+    	String Delimiter1 = ctx.getChild(8).getText();
+    	String Delimiter2 = ctx.getChild(10).getText();
+    	
+    	String id = ctx.ID(0).getText();
 		Dataset set = (Dataset) memory.get(id);
 		
+		set.ReadDataInput((String) filePath1.value, Delimiter1, Delimiter2, "in");
+		set.ReadDataInput((String) filePath2.value, Delimiter1, Delimiter2, "out");
 		
-		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestInput ", " @ " , " , ", "In");
-		set.ReadDataInput(" C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestOutput ", " @ " , " , ", "Out");
+	//	set.Run();
     	
     	return null;
     }
@@ -492,11 +507,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitString(StringContext ctx) {
         String value = ctx.getText();
-        value = value.substring(1, value.length() - 1).replace("\"\"", "\"");
         return new String_type(value);
     }
     
-
     @Override
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
