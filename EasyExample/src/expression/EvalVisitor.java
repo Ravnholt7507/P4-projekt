@@ -2,6 +2,7 @@ package expression;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
 import antlr.ExprParser.Read_dataContext;
+import antlr.ExprParser.Read_image_dataContext;
 import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SetupContext;
 import antlr.ExprParser.StringContext;
@@ -341,22 +343,94 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         String id = ctx.ID().getText();
         
         NN Network = (NN) memory.get(id);
+        double hitRateCounter = 0;
         
-      	for (int j = 0; j<epochs; j++) {
-            int ranTuple = getRandom(Network.currentSet.inputs.size());
-      		double[] input = fromDouble(Network.currentSet.inputs.get(ranTuple));
-      		double[] target = fromDouble(Network.currentSet.targets.get(ranTuple));
-      		Network.train(input, target, j);		
+        int size = 200;
+        
+        for (int l = 0; l<10; l++) {
+        	//Print expected output
+     	   System.out.print(" expected (før træning): " + helper(fromDouble(Network.currentSet.targets.get(l)))+"        ");
+     	    //print actual output
+     	   System.out.println(PrettyPrintGuess(Network.feedforward(fromDouble(Network.currentSet.inputs.get(l)))));
+        }
+        
+        // Træner datasættet per epoke 
+      	for (int j = 1; j<epochs; j++) {
+      		for (int m = 0; m<size; m++)
+      		Network.train(fromDouble(Network.currentSet.inputs.get(m)), fromDouble(Network.currentSet.targets.get(m)), j);
       	}
-    	
-        for (int i = 0; i<Network.currentSet.inputs.size(); i++) {
-    	   System.out.println("input:" + Arrays.toString(Network.currentSet.inputs.get(i)) + " expected: " +
-    	   Arrays.toString(Network.currentSet.targets.get(i)) + " Output: " + Arrays.toString(Network.feedforward(fromDouble(Network.currentSet.inputs.get(i))))
-    	   );
-       }
+
+        for (int i = 0; i<size; i++) {
+        	//Print expected output
+    	   System.out.print(" expected (efter træning): " + helper(fromDouble(Network.currentSet.targets.get(i))) + "        "); 
+    	    //print actual output
+    	   System.out.println(PrettyPrintGuess(Network.feedforward(fromDouble(Network.currentSet.inputs.get(i))))); 
+        }
         
+      	for (int u = 0; u<size; u++) {
+      		if (GetHit(helper(fromDouble(Network.currentSet.targets.get(u))), Network.feedforward(fromDouble(Network.currentSet.inputs.get(u)))) == true) {
+      			hitRateCounter += 1;
+      		}
+      	}
+      	
+      	System.out.println("Hitrate:  " + hitRateCounter / (double) size * 100);
+      	
         return super.visitTrain(ctx);
     }
+    
+    
+    public boolean GetHit(int expected, double[] actual) {
+    	int hit = 0;
+    	int guess = 0;
+    	double max = 0;
+    	
+    	for (int i =0; i < actual.length; i++) {	
+    		if (actual[i] > max) 
+    		{
+    			max = actual[i];
+    			guess = i;
+    	    }
+    	}
+    	if (guess == expected)
+    		return true;
+    	else 
+    		return false;
+    }
+    
+    public int PrettyPrintGuess(double[] ds) {
+    	int hit = 0;
+    	double Sum = 0;
+    	int guess = 0;
+    	double max = 0;
+    	
+    	for (int i =0; i < ds.length; i++) {
+    		Sum += ds[i];
+    		
+    		if (ds[i] > max) 
+    		{
+    			max = ds[i];
+    			guess = i;
+    	    }
+    	}
+    	System.out.print("guess: " + guess+"   " );
+    	
+    	for(int j =0; j < ds.length; j++) {
+    		ds[j] = ds[j]/Sum*100;
+    		System.out.printf("        " + j+ " : " + "%2d", Math.round((ds[j])/1)*1);
+    		System.out.print("%");
+
+    	}
+		return hit;
+    }
+    
+    public int helper(double[] ds) {
+    	for (int i =0; i < ds.length; i++) {
+    		if (ds[i] == 1.0)
+    			return i;
+    	}
+		return 0;
+    }
+    
 
     @Override
     public Expression visitDataset(DatasetContext ctx) {
@@ -455,6 +529,27 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	return null;
     }
   
+    
+    @Override 
+    public Expression visitRead_image_data(Read_image_dataContext ctx) {
+    	
+    	String idFile1 = ctx.ID(1).getText();  	
+    	Expression filePath1 = memory.get(idFile1);
+
+    	String idFile2 = ctx.ID(2).getText();  	
+    	Expression filePath2 = memory.get(idFile2);
+    	
+    	String Delimiter1 = ctx.STRING(0).getText();
+    	
+    	String id = ctx.ID(0).getText();
+		Dataset set = (Dataset) memory.get(id);
+    	
+    	set.Run((String) filePath1.value, (String) filePath2.value, Delimiter1);
+    	
+    	return null;
+    }
+    
+    
     @Override
     public Expression visitRead(ReadContext ctx) {
         try {
@@ -532,3 +627,14 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     }
     
 }
+
+
+//	   double expected = helper(fromDouble(Network.currentSet.targets.get(i)));
+/* 	   if(PrettyPrintGuess(Network.feedforward(fromDouble(Network.currentSet.inputs.get(i))), expected) == 1)
+   {
+   	hitRateCounter += 1;
+   }
+} 
+	System.out.println("hitrate: " + hitRateCounter / (double) epochs*100 + "% ");
+	System.out.println(hitRateCounter);
+*/

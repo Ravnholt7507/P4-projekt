@@ -1,12 +1,13 @@
-NeuralNetwork ourModel(1024,30,1)
+NeuralNetwork ourModel(784,200,10)
 
 Dataset swag;
 
-filepathone = "C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestInput";
-filepathtwo = "C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\NewTestOutput";
+filepath1 = "C:\\Users\\Mikkel\\Desktop\\Images\\train";
+ 
+filepath2 = "C:\\Users\\Mikkel\\Desktop\\train.txt";
 
-swag.Readdata(filepathone, filepathtwo, "@" , ",");
+swag.Readimage(filepath1, filepath2, "\n");
 
 ourModel.setup(Dataset swag, sigmoid);
 
-ourModel.train(50000)
+ourModel.train(500)

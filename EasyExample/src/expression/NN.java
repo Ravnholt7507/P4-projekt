@@ -40,7 +40,7 @@ public class NN extends Expression{
 	    
 	    this.bias_o = new Matrix(this.output_nodes, 1);
 	    this.bias_o.randomize();
-	    this.learning_rate = 0.05;   
+	    this.learning_rate = 0.1;   
 	}
 	
 	public void setup(Dataset Data) {
@@ -87,10 +87,12 @@ public class NN extends Expression{
 	    // ERROR = TARGETS - OUTPUTS
 	    Matrix output_errors = Matrix.subtract(targets, output);
 	    
-	    if(epoch % 1000 == 0) {
-	    	System.out.println("epoch: " + epoch);
-            System.out.println("Error" + output_errors.ToString());            
-       }
+        Matrix SE_cost = Matrix.MSE(targets, output_errors);
+        double Cost = Matrix.Mean(SE_cost);
+
+      /*  if ((epoch % 100 == 0)) {
+    	    System.out.print("Error: " + output_errors.ToString());
+        }*/
 
 	    // let gradient = outputs * (1 - outputs);
 	    // Calculate gradient

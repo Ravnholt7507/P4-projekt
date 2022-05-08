@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | setup | train | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
     ;
     
 decl		
@@ -39,7 +39,7 @@ read_data
  ;
  
 read_image_data
- : ID '.' READIMAGE '(' STRING* ')' ';'
+ : ID '.' READIMAGE '(' ID ',' ID ',' STRING* ')' ';'
  ;
  
 predict

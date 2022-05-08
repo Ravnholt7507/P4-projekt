@@ -39,6 +39,17 @@ class Matrix {
     }
     return result;
   }
+  
+  public static Matrix Quadratic(Matrix a, Matrix b) {
+	    // Return a new Matrix a-b
+	    Matrix result = new Matrix(a.rows, a.cols);
+	    for (int i = 0; i < result.rows; i++) {
+	      for (int j = 0; j < result.cols; j++) {
+	        result.data[i][j] = Math.pow(a.data[i][j] - b.data[i][j],2)/(result.rows*result.cols);
+	      }
+	    }
+	    return result;
+	  }
 
   public double[] toArray() {
     double[] arr = new double[this.data.length*this.data[0].length];
@@ -52,6 +63,21 @@ class Matrix {
     return arr;
   }
 
+  
+  public void Softmax() {
+      double[] exps = new double[this.rows];
+      double sum = 0;
+
+      for (int i = 0; i < this.rows; i++) {
+          exps[i] = Math.exp(this.data[i][0]);
+          sum += exps[i];
+      }
+
+      for (int i = 0; i < this.rows; i++) {
+          this.data[i][0] = exps[i] / sum ;
+      }
+  }
+  
   public void randomize() {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {

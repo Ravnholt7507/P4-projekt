@@ -94,11 +94,11 @@ public class Dataset extends Expression {
 	        }
 	}
  
-    public void Run() {
+    public void Run(String filepath1, String filepath2, String Delimiter) {
         System.out.println("Run test - pray to jesus");
-        int num_files = countFiles("C:\\Users\\Mikkel\\Desktop\\Images\\train");
-        List<Double[]> Input = readImages("C:\\Users\\Mikkel\\Desktop\\Images\\train");
-        List<Double[]> Expected = readResultFile(" C:\\Users\\Mikkel\\Desktop\\train.txt ", "\n");
+        
+        List<Double[]> Input = readImages(filepath1);
+        List<Double[]> Expected = readResultFile(filepath2, Delimiter);
         
         this.inputs = Input;
         this.targets = Expected;
@@ -133,9 +133,10 @@ public class Dataset extends Expression {
     }
 
     public static List<Double[]> readImages(String folderPath) {
+        folderPath = folderPath.substring(1, folderPath.length()-1);
         File f = new File(folderPath);
         List<Double[]> Inputdata = new ArrayList<Double[]>();
-        
+
         for (File file : f.listFiles()) {
             try {
                 if (file.isFile()) {
@@ -171,35 +172,39 @@ public class Dataset extends Expression {
     public static List<Double[]> readResultFile(String folderPath, String inputDel){
         //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it
         try {
-            String Directory = folderPath;
+            String Directory = folderPath.substring(1, folderPath.length() -1);
             String StringDelimiter = inputDel;
-            Directory = Directory.substring(1,Directory.length()-1);
-            //StringDelimiter = StringDelimiter.substring(1,StringDelimiter.length()-1);
+            StringDelimiter = StringDelimiter.substring(1,StringDelimiter.length()-1);
             
             File myFile = new File(Directory);
             Scanner myFileReader = new Scanner(myFile);
             myFileReader.useDelimiter(StringDelimiter);
 
             List<Double[]> Inputdata = new ArrayList<Double[]>();
-
+            
             //Reads each line, gets relevant int and adds it to Inputdata
             while(myFileReader.hasNextLine())
             {
                 String ReadNext = new String(myFileReader.next());
                 String ReadNextSubstringed;
-                ReadNextSubstringed = ReadNext.substring(ReadNext.length()-2, ReadNext.length()-1);
-                Double currentInput = Double.parseDouble(ReadNextSubstringed);
+                ReadNextSubstringed = ReadNext.substring(ReadNext.length()-11, ReadNext.length()-1);
+             
+               
+                Double[] currentArrayInput = new Double[ReadNextSubstringed.length()];
                 
-                Double[] currentArrayInput = new Double[1];
-                currentArrayInput[0] = currentInput / 10; 
+                for (int i = 0; currentArrayInput.length > i; i++) {
+                	currentArrayInput[0] = 0.0; }
+                
+                String[] SplitLine = ReadNextSubstringed.split("");
+                
+                for ( int j = 0; j < SplitLine.length; j++) {
+                     currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
                 
                 Inputdata.add(currentArrayInput);
                 
             }
             myFileReader.close();
-
-            //Print expected values
-            //System.out.println(Inputdata);
+            
             return Inputdata;
         }
         catch (FileNotFoundException e) {
