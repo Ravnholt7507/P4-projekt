@@ -2,16 +2,16 @@ NeuralNetwork ourModel(784,100,10)
 
 Dataset swag;
 
-InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train";
+InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k";
  
-TargetData = "C:\\Users\\Mikkel\\Desktop\\train.txt";
+TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k.txt";
 
-TestData = "C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\TestData";
+TestData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100";
 
 swag.Readimage(InputData, TargetData, ",", "\n");
 
-ourModel.setup(Dataset swag, sigmoid, 0.1);
+ourModel.setup(Dataset swag, sigmoid, 0.04);
 
-ourModel.train(2000)
+ourModel.train(10)
 
 ourModel.predict(TestData);
