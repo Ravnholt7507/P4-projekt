@@ -1,2 +1,13 @@
-amax[] = {2,3,4};
-Print(amax);
+NeuralNetwork ourModel(784,100,10)
+
+Dataset swag;
+
+filepath1 = "C:\Users\Mikkel\Desktop\Images\test";
+ 
+filepath2 = "C:\Users\runef\Desktop\Train_UQcUa52\Test10k.txt";
+
+swag.Readimage(filepath1, filepath2, "\n");
+
+ourModel.setup(Dataset swag, sigmoid);
+
+ourModel.train(250)
