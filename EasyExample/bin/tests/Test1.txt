@@ -1,0 +1,17 @@
+NeuralNetwork ourModel(784,100,10)
+
+Dataset swag;
+
+InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train";
+ 
+TargetData = "C:\\Users\\Mikkel\\Desktop\\train.txt";
+
+TestData = "C:\\Users\\Mikkel\\Desktop\\space\\EasyExample\\src\\tests\\TestData";
+
+swag.Readimage(InputData, TargetData, ",", "\n");
+
+ourModel.setup(Dataset swag, sigmoid, 0.1);
+
+ourModel.train(400)
+
+ourModel.predict(TestData);
