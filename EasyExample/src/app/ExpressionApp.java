@@ -15,39 +15,44 @@ import expression.MyErrorListener;
 public class ExpressionApp {
 
 	public static void main(String[] args) {
-		if(args.length != 1) {
-			System.err.print("Usage: file name");
-		}
-		else {
-			String fileName = args[0];
-			ExprParser parser = getParser(fileName);
-			
-			//Tell antlr to build a parse tree
-			// parse from the start symbol 'prog'
-			 ParseTree antlrAST = parser.prog();
-			 
-			 if(MyErrorListener.hasError) {
-				 /* let syntax error be reported */
-			 }
-			 else {
-				 // Create a visitor for converting the 
-				 //parse tree into expression/program objects
-				 EvalVisitor visitor = new EvalVisitor();
-				 visitor.visit(antlrAST);
-				 
-				 if(visitor.semanticErrors.isEmpty()) {
-			         System.out.println("worked");
-					
-				 }
-				 else {
-					 for(String err: visitor.semanticErrors) {
-						 System.out.println(err);
-					 }
-				 } 
-			 }
-		}
+	    long startTime = System.nanoTime();
+	    if(args.length != 1) {
+	        System.err.print("Usage: file name");
+	    }
+	    else {
+	        String fileName = args[0];
+	        ExprParser parser = getParser(fileName);
+	        
+	        //Tell antlr to build a parse tree
+	        // parse from the start symbol 'prog'
+	         ParseTree antlrAST = parser.prog();
+	         
+	         if(MyErrorListener.hasError) {
+	             /* let syntax error be reported */
+	         }
+	         else {
+	             // Create a visitor for converting the 
+	             //parse tree into expression/program objects
+	             EvalVisitor visitor = new EvalVisitor();
+	             visitor.visit(antlrAST);
+	             
+	             if(visitor.semanticErrors.isEmpty()) {
+	                 System.out.println("worked");
+	                
+	             }
+	             else {
+	                 for(String err: visitor.semanticErrors) {
+	                     System.out.println(err);
+	                 }
+	             } 
+	         }
+	    }
+	    long endTime   = System.nanoTime();
+	    long totalTime = endTime - startTime;
+	    System.out.println("Seconds elapsed: " + totalTime / 1000000000);
 	}
-
+	
+	
 	/*
 	 * Here the types of parser and
 	 * lexer are specific to grammar name expr.g4

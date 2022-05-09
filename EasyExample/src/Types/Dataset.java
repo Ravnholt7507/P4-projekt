@@ -99,80 +99,78 @@ public class Dataset extends Expression {
 	
 	
 	
-    public void Run(String filepath1, String filepath2, String Delimiter, String Delimiter2) {
-        System.out.println("Run test - pray to jesus");
-        
-        List<Double[]> Input = readImages(filepath1);
-        List<Double[]> Expected = readResultFile(filepath2, Delimiter, Delimiter2);
-        
-        this.inputs = Input;
-        this.targets = Expected;
+	public void Run(String filepath1, String filepath2, String Delimiter, String Delimiter2) {
+	    System.out.println("Loading data... ");
+	    
+	    List<Double[]> Input = readImages(filepath1);
+	    List<Double[]> Expected = readResultFile(filepath2, Delimiter, Delimiter2);
+	    
+	    this.inputs = Input;
+	    this.targets = Expected;
 
-    }
+	}
 
+	public static int countFiles(String folderPath) {
+	    File f = new File(folderPath);
+	    int count = 0;
+	    for (File file : f.listFiles()) {
+	            if (file.isFile()) {
+	                    count++;
+	            }
+	    }
+	    System.out.println("Number of files: " + count);
+	    return count;
+	}
+
+	public static Double[] copyFromIntArray(int[] source) {
+	    Double[] dest = new Double[source.length];
+	    for(int i=0; i<source.length; i++) {
+	        dest[i] = (double) source[i];
+	    }
+	    return dest;
+	}
+
+	public static List<Double[]> readImages(String folderPath) {
+	    folderPath = folderPath.substring(1, folderPath.length()-1);
+	    File f = new File(folderPath);
+	    List<Double[]> Inputdata = new ArrayList<Double[]>();
+
+	    for (File file : f.listFiles()) {
+	        try {
+	            if (file.isFile()) {
+	                
+	                BufferedImage img = ImageIO.read(file);
+	                
+	                int width = img.getWidth();
+	                int height = img.getHeight();
+	                int[][] imgArr = new int[width][height];
+	                Raster raster = img.getData();
+	                
+	                for (int i = 0; i < width; i++) {
+	                    for (int j = 0; j < height; j++) {
+	                        imgArr[i][j] = raster.getSample(i, j, 0);
+	                        imgArr[i][j] /= 255;                            
+	                    }
+	                }
+	                
+	                int[] array = Stream.of(imgArr).flatMapToInt(IntStream::of).toArray();
+	                Double[] inputarr = copyFromIntArray(array);
+	                Inputdata.add(inputarr); 
+	            }
+	        }
+	        
+	        catch (Exception e) {
+	            //TODO: handle exception
+	        }
+	    }
+        System.out.print(Arrays.toString(Inputdata.get(0)));
+	    System.out.println("Loading complete");
+	    return Inputdata;
+	}
     
-    
-    
-    
-    
-    
-    
-    public static int countFiles(String folderPath) {
-        File f = new File(folderPath);
-        int count = 0;
-        for (File file : f.listFiles()) {
-                if (file.isFile()) {
-                        count++;
-                }
-        }
-        System.out.println("Number of files: " + count);
-        return count;
-    }
 
-    public static Double[] copyFromIntArray(int[] source) {
-        Double[] dest = new Double[source.length];
-        for(int i=0; i<source.length; i++) {
-            dest[i] = (double) source[i];
-        }
-        return dest;
-    }
-
-    public static List<Double[]> readImages(String folderPath) {
-        folderPath = folderPath.substring(1, folderPath.length()-1);
-        File f = new File(folderPath);
-        List<Double[]> Inputdata = new ArrayList<Double[]>();
-
-        for (File file : f.listFiles()) {
-            try {
-                if (file.isFile()) {
-
-                    BufferedImage img = ImageIO.read(file);
-
-                    int width = img.getWidth();
-                    int height = img.getHeight();
-                    int[][] imgArr = new int[width][height];
-                    Raster raster = img.getData();
-                    
-                    for (int i = 0; i < width; i++) {
-                        for (int j = 0; j < height; j++) {
-                            imgArr[i][j] = raster.getSample(i, j, 0);
-                        }
-                    }
-
-                    int[] array = Stream.of(imgArr).flatMapToInt(IntStream::of).toArray();
-                    Double[] inputarr = copyFromIntArray(array);
-                    Inputdata.add(inputarr); 
-                }
-            } 
-
-            catch (Exception e) {
-                //TODO: handle exception
-            }
-        }
-        
-        return Inputdata;
-        //System.out.println("Size of inputdata: " + Inputdata.size());
-    }
+	
+	
 
     public List<Double[]> readResultFile(String folderPath, String inputDel, String inputDel2){
         //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it

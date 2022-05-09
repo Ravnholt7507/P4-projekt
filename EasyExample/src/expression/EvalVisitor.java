@@ -339,13 +339,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitTrain(TrainContext ctx) {
 
+    	System.out.println("Starting to train... ");
         int epochs = Integer.valueOf(ctx.epochs().INT().getText());
         String id = ctx.ID().getText();
         
         NN Network = (NN) memory.get(id);
         double hitRateCounter = 0;
         
-        int DataInputs = 10;
+        int DataInputs = 1;
+        
+        DecimalFormat numberFormat = new DecimalFormat("#");
+        double DEpochs = epochs;
         
         List<double[]> inputs = fromDouble2(Network.currentSet.inputs);
         List<double[]> targets= fromDouble2(Network.currentSet.targets);
@@ -353,25 +357,24 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         // Træner datasættet per epoke 
       	for (int j = 1; j<epochs; j++) {
       		for (int m = 0; m<DataInputs; m++)
-
       		Network.train(inputs.get(m), targets.get(m), j);
+      		System.out.println(numberFormat.format(j/DEpochs*100) + "%");
       	}
 
-        for (int i = 0; i<DataInputs; i++) {
+      	
+      	memory.replace(id, Network);
+      	
+/*        for (int i = 0; i<DataInputs; i++) {
 	  		if (GetHit(helper(fromDouble(Network.currentSet.targets.get(i))), Network.feedforward(fromDouble(Network.currentSet.inputs.get(i)))) == true) 
 	  			hitRateCounter += 1;
-  		}
-      		
-      	
-      	 
-      	System.out.println("Hitrate:  " + hitRateCounter / (double) DataInputs * 100);
+  		} 
+      	System.out.println("Hitrate:  " + hitRateCounter / (double) DataInputs * 100); */
       	
         return super.visitTrain(ctx);
     }
     
     
     public boolean GetHit(int expected, double[] actual) {
-    	int hit = 0;
     	int guess = 0;
     	double max = 0;
     	

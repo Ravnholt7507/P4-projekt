@@ -12,6 +12,6 @@ swag.Readimage(InputData, TargetData, ",", "\n");
 
 ourModel.setup(Dataset swag, sigmoid, 0.1);
 
-ourModel.train(400)
+ourModel.train(2000)
 
 ourModel.predict(TestData);
