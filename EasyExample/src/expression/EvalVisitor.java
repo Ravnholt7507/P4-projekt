@@ -346,7 +346,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         NN Network = (NN) memory.get(id);
         double hitRateCounter = 0;
         
-        int DataInputs = 1;
+        int DataInputs = Network.currentSet.inputs.size();
         
         DecimalFormat numberFormat = new DecimalFormat("#");
         double DEpochs = epochs;
@@ -362,13 +362,15 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
       	}
 
       	
-      	memory.replace(id, Network);
+    //  	System.out.print(Network.weights_ih.ToString());
       	
-/*        for (int i = 0; i<DataInputs; i++) {
+      	
+      	memory.replace(id, Network);
+        for (int i = 0; i<DataInputs; i++) {
 	  		if (GetHit(helper(fromDouble(Network.currentSet.targets.get(i))), Network.feedforward(fromDouble(Network.currentSet.inputs.get(i)))) == true) 
 	  			hitRateCounter += 1;
   		} 
-      	System.out.println("Hitrate:  " + hitRateCounter / (double) DataInputs * 100); */
+      	System.out.println("TRAINING HITRATE:  " + hitRateCounter / (double) DataInputs * 100);
       	
         return super.visitTrain(ctx);
     }
@@ -470,15 +472,33 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitPredict(PredictContext ctx) {
         String id = ctx.getChild(0).getText();
         NN Network = (NN) memory.get(id);  
+        double hitRateCounter = 0;
+        
+    //  	System.out.print(Network.weights_ih.ToString());
+        
         //If input is a an id
     	String path = ctx.getChild(4).getText();  	
-    	Expression DataPath = memory.get(path);
+    	Expression DataPath = memory.get(path);	
+    	List<double[]> TestInput = fromDouble2(Dataset.readImages((String) DataPath.value));
     	
-    	List<double[]> TestInput = fromDouble2(Dataset.ReadData((String) DataPath.value, "@", ","));
+    	String testLabelPath = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt";    	
+    	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels(testLabelPath, ",", "\n"));
     	
-    	for ( double[] input: TestInput) {
-    		System.out.println(PrettyPrintGuess(Network.feedforward(input))); 
+
+    	for ( int j =0; j<TestInput.size(); j++) {
+    		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
+    		System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 
     	}
+    	
+    	
+    	
+        for (int i = 0; i<TestInput.size(); i++) {
+	  		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) 
+	  			hitRateCounter += 1;
+  		} 
+      	System.out.println("TEST HITRATE:  " + hitRateCounter / (double) TestInput.size() * 100);
+      	
+    
     	return Network;
     }
 

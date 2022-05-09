@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -129,6 +130,14 @@ public class Dataset extends Expression {
 	    }
 	    return dest;
 	}
+	
+	public static Double[] copyFromdoubleArray(double[] source) {
+	    Double[] dest = new Double[source.length];
+	    for(int i=0; i<source.length; i++) {
+	        dest[i] = source[i];
+	    }
+	    return dest;
+	}
 
 	public static List<Double[]> readImages(String folderPath) {
 	    folderPath = folderPath.substring(1, folderPath.length()-1);
@@ -143,18 +152,18 @@ public class Dataset extends Expression {
 	                
 	                int width = img.getWidth();
 	                int height = img.getHeight();
-	                int[][] imgArr = new int[width][height];
+	                double[][] imgArr = new double[width][height];
 	                Raster raster = img.getData();
 	                
 	                for (int i = 0; i < width; i++) {
 	                    for (int j = 0; j < height; j++) {
 	                        imgArr[i][j] = raster.getSample(i, j, 0);
-	                        imgArr[i][j] /= 255;                            
+	                        imgArr[i][j] /= 255.0;                            
 	                    }
 	                }
 	                
-	                int[] array = Stream.of(imgArr).flatMapToInt(IntStream::of).toArray();
-	                Double[] inputarr = copyFromIntArray(array);
+	                double[] array = Stream.of(imgArr).flatMapToDouble(DoubleStream::of).toArray();
+	                Double[] inputarr = copyFromdoubleArray(array);
 	                Inputdata.add(inputarr); 
 	            }
 	        }
@@ -163,7 +172,6 @@ public class Dataset extends Expression {
 	            //TODO: handle exception
 	        }
 	    }
-        System.out.print(Arrays.toString(Inputdata.get(0)));
 	    System.out.println("Loading complete");
 	    return Inputdata;
 	}
@@ -312,5 +320,57 @@ public class Dataset extends Expression {
 	        }
 	       return null;
 	}
+
+
+    public static List<Double[]> LoadTestLabels(String folderPath, String inputDel, String inputDel2){
+	        //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it
+	        try {
+	            String StringDelimiter1 = inputDel;
+	            String StringDelimiter2 = inputDel2;
+
+	            File myFile = new File(folderPath);
+	            Scanner myFileReader = new Scanner(myFile);
+	            myFileReader.useDelimiter(StringDelimiter2);
+
+	            List<Double[]> Inputdata = new ArrayList<Double[]>();
+	           
+	            
+	            //Reads each line, gets relevant int and adds it to Inputdata
+	            while(myFileReader.hasNextLine())
+	            {
+	                int DelimitPlace = 0;
+	                String ReadNext = new String(myFileReader.next());
+	                String ReadNextSubstringed;
+	                
+	                DelimitPlace = ReadNext.indexOf(StringDelimiter1) + 1;
+	                
+	                ReadNextSubstringed = ReadNext.substring(DelimitPlace, ReadNext.length()-1);
+	             
+	                Double[] currentArrayInput = new Double[ReadNextSubstringed.length()];
+	                
+	                for (int i = 0; currentArrayInput.length > i; i++) {
+	                	currentArrayInput[0] = 0.0; }
+	                
+	                String[] SplitLine = ReadNextSubstringed.split("");
+	                
+	                for ( int j = 0; j < SplitLine.length; j++) {
+	                     currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
+	                
+	                Inputdata.add(currentArrayInput);
+	                
+	            }
+	            myFileReader.close();
+	            
+	            return Inputdata;
+	        }
+	        catch (FileNotFoundException e) {
+	            System.out.println("Filen findes ikke");
+	            
+	        }
+	        //In case try fails, return trash list
+	        List<Double[]> blabla = new ArrayList<Double[]>();
+	        return blabla;
+	        
+	    }
 
 }
