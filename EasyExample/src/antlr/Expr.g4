@@ -43,7 +43,7 @@ read_image_data
  ;
  
 predict
- : ID '.' PREDICT '(' ID ')' ';'
+ : ID '.' PREDICT '(' ID (',' ID)? ')' ';'
  ;
  
 condition_block

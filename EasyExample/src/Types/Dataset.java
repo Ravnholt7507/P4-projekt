@@ -325,10 +325,11 @@ public class Dataset extends Expression {
     public static List<Double[]> LoadTestLabels(String folderPath, String inputDel, String inputDel2){
 	        //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it
 	        try {
+	        	String dir = folderPath.substring(1, folderPath.length()-1);
 	            String StringDelimiter1 = inputDel;
 	            String StringDelimiter2 = inputDel2;
-
-	            File myFile = new File(folderPath);
+	            
+	            File myFile = new File(dir);
 	            Scanner myFileReader = new Scanner(myFile);
 	            myFileReader.useDelimiter(StringDelimiter2);
 

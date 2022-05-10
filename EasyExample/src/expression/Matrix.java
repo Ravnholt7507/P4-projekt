@@ -8,6 +8,8 @@ class Matrix {
 	int rows;
 	int cols;
 	double[][] data;
+	
+	public Function func = (p1) -> { return p1; }; 
 
   public Matrix(int rows, int cols) {
     this.rows = rows;
@@ -81,7 +83,7 @@ class Matrix {
   public void randomize() {
     for (int i = 0; i < this.rows; i++) {
       for (int j = 0; j < this.cols; j++) {
-         this.data[i][j] = (Math.round((Math.random() * 2 - 1)*100.0)/100.0);
+         this.data[i][j] = (Math.random() * 2 - 1);
       }
     }
   }
@@ -246,5 +248,28 @@ class Matrix {
 	  string += Arrays.toString(this.data[i]) + " \n";
 	  }
 	  return string;
-  }  
+  } 
+  
+  /*
+  public void map(Function func) {
+	    // Apply a function to every element of matrix
+	    for (int i = 0; i < this.rows; i++) {
+	      for (int j = 0; j < this.cols; j++) {
+	        double val = this.data[i][j];
+	        this.data[i][j] = func(val);
+	      }
+	    }
+	  }
+
+	  static map(matrix, func) {
+	    let result = new Matrix(matrix.rows, matrix.cols);
+	    // Apply a function to every element of matrix
+	    for (let i = 0; i < matrix.rows; i++) {
+	      for (let j = 0; j < matrix.cols; j++) {
+	        let val = matrix.data[i][j];
+	        result.data[i][j] = func(val);
+	      }
+	    }
+	    return result;
+	  }*/
 }

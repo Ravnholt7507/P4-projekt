@@ -82,10 +82,9 @@ public class NN extends Expression{
 	    Matrix output = Matrix.DotProduct(this.weights_ho, hidden);
 	    output.add(this.bias_o);
 	    output.Sigmoid();
+	    // Feedforward done
 	    
-	    if (epoch % 1000 == 0)
-	    System.out.print(epoch);
-	    
+	    // Begin Backpropagatation
 	    // Convert array to matrix object
 	    Matrix targets = Matrix.fromArrayToMatrix(target_array);
 
@@ -93,28 +92,18 @@ public class NN extends Expression{
 	    // ERROR = TARGETS - OUTPUTS
 	    Matrix output_errors = Matrix.subtract(targets, output);
 	    
-	    
-//	    System.out.print("TARGET ARRAY!!!!!!!: " + Arrays.toString(target_array));
-//	    System.out.print("OUTPUT!!!!!!!!!!: " + output_errors.ToString());
-	    
 	    // let gradient = outputs * (1 - outputs);
 	    // Calculate gradient
 	    Matrix gradients = Matrix.dSigmoid(output);
-	    
 	    gradients.multiply(output_errors);
-	    
 	    gradients.multiply(this.learning_rate);    
 	    
 	    // Calculate deltas 
 	    Matrix hidden_T = Matrix.transpose(hidden);
 	    Matrix weight_ho_deltas = Matrix.DotProduct(gradients, hidden_T);
-	    
-//	    System.out.print("delta weights (output to hidden): " + weight_ho_deltas.ToString());
 
 	    // Adjust the weights by deltas
 	    this.weights_ho.add(weight_ho_deltas);
-	    
-//	    System.out.println("New output to hidden weigth: " + this.weights_ho.ToString());
 	    
 	    // Adjust the bias by its deltas (which is just the gradients)
 	    this.bias_o.add(gradients);
@@ -132,12 +121,8 @@ public class NN extends Expression{
 	    Matrix inputs_T = Matrix.transpose(inputs);
 	    Matrix weight_ih_deltas = Matrix.DotProduct(hidden_gradient, inputs_T);
 	    
-	 //   System.out.println("delta weights (hidden to Start): " + weight_ih_deltas.ToString());
-
 	    this.weights_ih.add(weight_ih_deltas);
-	    
-	//    System.out.println("New hidden to start later weights: " + this.weights_ih.ToString());
-	    
+
 	    // Adjust the bias by its deltas (which is just the gradients)
 	    this.bias_h.add(hidden_gradient);
 	  }

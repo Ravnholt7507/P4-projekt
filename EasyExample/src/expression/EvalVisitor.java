@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -346,31 +347,35 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         NN Network = (NN) memory.get(id);
         double hitRateCounter = 0;
         
-        int DataInputs = Network.currentSet.inputs.size();
-        
+        // int DataInputs = Network.currentSet.inputs.size();
+        int DataInputs = 200;
+
         DecimalFormat numberFormat = new DecimalFormat("#");
         double DEpochs = epochs;
         
         List<double[]> inputs = fromDouble2(Network.currentSet.inputs);
         List<double[]> targets= fromDouble2(Network.currentSet.targets);
 
+        List<Integer> indexArray = new ArrayList<Integer>();
+        for (int l = 0; l < DataInputs; l++)
+        	indexArray.add(l);
+        
         // Træner datasættet per epoke 
       	for (int j = 1; j<epochs; j++) {
-      		for (int m = 0; m<DataInputs; m++)
-      		Network.train(inputs.get(m), targets.get(m), j);
-      		System.out.println(numberFormat.format(j/DEpochs*100) + "%");
+     //       Collections.shuffle(indexArray);
+      		for (int m = 0; m<DataInputs; m++) {
+     // 			Network.train(inputs.get(indexArray.get(m)), targets.get(indexArray.get(m)), j);
+      			Network.train(inputs.get(m), targets.get(m), j);
+      			System.out.println(numberFormat.format(j/DEpochs*100) + "%");
+      		}
       	}
-
-      	
-    //  	System.out.print(Network.weights_ih.ToString());
-      	
       	
       	memory.replace(id, Network);
         for (int i = 0; i<DataInputs; i++) {
-	  		if (GetHit(helper(fromDouble(Network.currentSet.targets.get(i))), Network.feedforward(fromDouble(Network.currentSet.inputs.get(i)))) == true) 
+	  		if (GetHit(helper(targets.get(i)), Network.feedforward(inputs.get(i))) == true) 
 	  			hitRateCounter += 1;
   		} 
-      	System.out.println("TRAINING HITRATE:  " + hitRateCounter / (double) DataInputs * 100);
+      	System.out.println("TRAINING HITRATE:  " + (hitRateCounter / (double) (DataInputs))*100 );
       	
         return super.visitTrain(ctx);
     }
@@ -474,29 +479,27 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         NN Network = (NN) memory.get(id);  
         double hitRateCounter = 0;
         
-    //  	System.out.print(Network.weights_ih.ToString());
-        
-        //If input is a an id
+        //Get Inputs from source
     	String path = ctx.getChild(4).getText();  	
     	Expression DataPath = memory.get(path);	
     	List<double[]> TestInput = fromDouble2(Dataset.readImages((String) DataPath.value));
     	
-    	String testLabelPath = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt";    	
-    	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels(testLabelPath, ",", "\n"));
+    	//Get Output labels from source
+		String LabelString = ctx.ID(2).getText();
+		Expression LabelDataPath = memory.get(LabelString);	
+    	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels((String) LabelDataPath.value, ",", "\n"));
     	
-
     	for ( int j =0; j<TestInput.size(); j++) {
     		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
     		System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 
     	}
     	
-    	
-    	
         for (int i = 0; i<TestInput.size(); i++) {
-	  		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) 
+	  		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) {
 	  			hitRateCounter += 1;
+	  		}
   		} 
-      	System.out.println("TEST HITRATE:  " + hitRateCounter / (double) TestInput.size() * 100);
+      	System.out.println("TEST HITRATE:  " + (hitRateCounter / (double) TestInput.size()) * 100);
       	
     
     	return Network;
