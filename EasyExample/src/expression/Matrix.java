@@ -238,8 +238,6 @@ class Matrix {
       return result;
   }
   
-  
-  
   public String ToString() 
   {
 	  String string = "";
@@ -250,26 +248,11 @@ class Matrix {
 	  return string;
   } 
   
-  /*
-  public void map(Function func) {
-	    // Apply a function to every element of matrix
-	    for (int i = 0; i < this.rows; i++) {
-	      for (int j = 0; j < this.cols; j++) {
-	        double val = this.data[i][j];
-	        this.data[i][j] = func(val);
-	      }
-	    }
-	  }
-
-	  static map(matrix, func) {
-	    let result = new Matrix(matrix.rows, matrix.cols);
-	    // Apply a function to every element of matrix
-	    for (let i = 0; i < matrix.rows; i++) {
-	      for (let j = 0; j < matrix.cols; j++) {
-	        let val = matrix.data[i][j];
-	        result.data[i][j] = func(val);
-	      }
-	    }
-	    return result;
-	  }*/
+  
+  public Matrix map(Function fn) {
+      for (int y = 0; y < rows; y++)
+          for (int x = 0; x < cols; x++)
+              data[y][x] = fn.apply(data[y][x]);
+      return this;
+  }
 }

@@ -5,10 +5,23 @@ import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -17,6 +30,7 @@ import javax.imageio.ImageIO;
 
 import Statements.Read;
 import expression.Expression;
+import expression.FilenameComparator;
 
 public class Dataset extends Expression {
 	
@@ -138,17 +152,21 @@ public class Dataset extends Expression {
 	    }
 	    return dest;
 	}
-
+	
 	public static List<Double[]> readImages(String folderPath) {
 	    folderPath = folderPath.substring(1, folderPath.length()-1);
 	    File f = new File(folderPath);
 	    List<Double[]> Inputdata = new ArrayList<Double[]>();
-
-	    for (File file : f.listFiles()) {
+	    
+	    File[] files = f.listFiles();
+	    
+	    Arrays.sort(files, Comparator.comparing(File::getName, new FilenameComparator()));
+	    
+	    for (int k = 0; k < files.length; k++) {
 	        try {
-	            if (file.isFile()) {
+	            if (files[k].isFile()) {
 	                
-	                BufferedImage img = ImageIO.read(file);
+	                BufferedImage img = ImageIO.read(files[k]);
 	                
 	                int width = img.getWidth();
 	                int height = img.getHeight();
@@ -157,11 +175,11 @@ public class Dataset extends Expression {
 	                
 	                for (int i = 0; i < width; i++) {
 	                    for (int j = 0; j < height; j++) {
-	                        imgArr[i][j] = raster.getSample(i, j, 0);
-	                        imgArr[i][j] /= 255.0;                            
+	                        imgArr[i][j] = raster.getSample(j, i, 0);
+	                        if (imgArr[i][j] > 1)
+		                        imgArr[i][j] = 1;  
 	                    }
 	                }
-	                
 	                double[] array = Stream.of(imgArr).flatMapToDouble(DoubleStream::of).toArray();
 	                Double[] inputarr = copyFromdoubleArray(array);
 	                Inputdata.add(inputarr); 
@@ -234,51 +252,6 @@ public class Dataset extends Expression {
         
     }
 
-    public static List<Double[]> readImages(String folderPath, int new_height, int new_width){
-
-
-        File f = new File(folderPath);
-        List<Double[]> Inputdata = new ArrayList<Double[]>();
-
-        for (File file : f.listFiles()) {
-            try {
-                if (file.isFile()) {
-
-                    BufferedImage img = ImageIO.read(file);
-
-                    BufferedImage resizedImage = new BufferedImage(new_width, new_height, BufferedImage.TYPE_INT_RGB);
-                    Graphics2D graphics2D = resizedImage.createGraphics();
-                    graphics2D.drawImage(img, 0, 0, new_width, new_height, null);
-                    graphics2D.dispose();
-
-                    //Test save images
-           //         File test = new File("MyFile.png");
-           //         ImageIO.write(resizedImage, "PNG", test);
-
-                    int width = resizedImage.getWidth();
-                    int height = resizedImage.getHeight();
-                    int[][] imgArr = new int[width][height];
-                    Raster raster = resizedImage.getData();
-
-                    for (int i = 0; i < width; i++) {
-                        for (int j = 0; j < height; j++) {
-                            imgArr[i][j] = raster.getSample(i, j, 0);
-                        }
-                    }
-
-                    int[] array = Stream.of(imgArr).flatMapToInt(IntStream::of).toArray();
-                    Double[] inputarr = copyFromIntArray(array);
-                    Inputdata.add(inputarr); 
-                }
-            } 
-
-            catch (Exception e) {
-                //TODO: handle exception
-            }
-        }
-        return Inputdata;
-    }
-
 	//Methods for reading arrays online
 	public static List<Double[]> ReadData(String path, String Delimiter1, String Delimiter2) {
 	       try {
@@ -320,7 +293,6 @@ public class Dataset extends Expression {
 	        }
 	       return null;
 	}
-
 
     public static List<Double[]> LoadTestLabels(String folderPath, String inputDel, String inputDel2){
 	        //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it
@@ -375,3 +347,66 @@ public class Dataset extends Expression {
 	    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+public static List<Double[]> readImages(String folderPath, int new_height, int new_width){
+
+
+    File f = new File(folderPath);
+    List<Double[]> Inputdata = new ArrayList<Double[]>();
+
+    for (File file : f.listFiles()) {
+        try {
+            if (file.isFile()) {
+
+                BufferedImage img = ImageIO.read(file);
+
+                BufferedImage resizedImage = new BufferedImage(new_width, new_height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics2D = resizedImage.createGraphics();
+                graphics2D.drawImage(img, 0, 0, new_width, new_height, null);
+                graphics2D.dispose();
+
+                //Test save images
+       //         File test = new File("MyFile.png");
+       //         ImageIO.write(resizedImage, "PNG", test);
+
+                int width = resizedImage.getWidth();
+                int height = resizedImage.getHeight();
+                int[][] imgArr = new int[width][height];
+                Raster raster = resizedImage.getData();
+
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        imgArr[i][j] = raster.getSample(i, j, 0);
+                    }
+                }
+
+                int[] array = Stream.of(imgArr).flatMapToInt(IntStream::of).toArray();
+                Double[] inputarr = copyFromIntArray(array);
+                Inputdata.add(inputarr); 
+            }
+        } 
+
+        catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+    return Inputdata;
+}
+
+*/
+

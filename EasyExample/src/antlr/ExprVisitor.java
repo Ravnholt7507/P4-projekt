@@ -32,6 +32,24 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIf_stat(ExprParser.If_statContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#condition_block}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondition_block(ExprParser.Condition_blockContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#stat_block}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStat_block(ExprParser.Stat_blockContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ExprParser#while_stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhile_stat(ExprParser.While_statContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#neural_network}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -73,24 +91,6 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPredict(ExprParser.PredictContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#condition_block}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCondition_block(ExprParser.Condition_blockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#stat_block}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStat_block(ExprParser.Stat_blockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ExprParser#while_stat}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitWhile_stat(ExprParser.While_statContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExprParser#train}.
 	 * @param ctx the parse tree

@@ -330,7 +330,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	
     	Dataset set = (Dataset) memory.get(DatasetId);
     	NN Network = (NN) memory.get(NetworkId);
-    	Network.setup(set, LearningRate);
+    	Network.setup(set, LearningRate, x -> (1/( 1 + Math.pow(Math.E,(-1*x)))));
     	
     	memory.replace(NetworkId, Network);
     	
@@ -344,32 +344,30 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         int epochs = Integer.valueOf(ctx.epochs().INT().getText());
         String id = ctx.ID().getText();
         
+        double temp_epoch = 0;
+        
         NN Network = (NN) memory.get(id);
         double hitRateCounter = 0;
         
-        // int DataInputs = Network.currentSet.inputs.size();
-        int DataInputs = 200;
+        int DataInputs = Network.currentSet.inputs.size();
 
         DecimalFormat numberFormat = new DecimalFormat("#");
         double DEpochs = epochs;
         
         List<double[]> inputs = fromDouble2(Network.currentSet.inputs);
         List<double[]> targets= fromDouble2(Network.currentSet.targets);
-
-        List<Integer> indexArray = new ArrayList<Integer>();
-        for (int l = 0; l < DataInputs; l++)
-        	indexArray.add(l);
         
         // Træner datasættet per epoke 
       	for (int j = 1; j<epochs; j++) {
-     //       Collections.shuffle(indexArray);
       		for (int m = 0; m<DataInputs; m++) {
-     // 			Network.train(inputs.get(indexArray.get(m)), targets.get(indexArray.get(m)), j);
       			Network.train(inputs.get(m), targets.get(m), j);
-      			System.out.println(numberFormat.format(j/DEpochs*100) + "%");
+      			if(temp_epoch != j/DEpochs*100) {
+                    System.out.println(numberFormat.format(j/DEpochs*100) + "%");
+                    temp_epoch = j/DEpochs*100;
+                }      		
       		}
       	}
-      	
+
       	memory.replace(id, Network);
         for (int i = 0; i<DataInputs; i++) {
 	  		if (GetHit(helper(targets.get(i)), Network.feedforward(inputs.get(i))) == true) 
@@ -489,8 +487,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		Expression LabelDataPath = memory.get(LabelString);	
     	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels((String) LabelDataPath.value, ",", "\n"));
     	
-    	for ( int j =0; j<TestInput.size(); j++) {
-    		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
+    	for ( int j =0; j<10; j++) {
+     		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
     		System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 
     	}
     	
@@ -561,6 +559,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		Dataset set = (Dataset) memory.get(id);
     	
     	set.Run((String) filePath1.value, (String) filePath2.value, Delimiter1, Delimiter2);
+    	
+    	memory.replace(id, set);
     	
     	return null;
     }

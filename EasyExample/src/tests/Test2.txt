@@ -10,4 +10,4 @@ swag.Readimage(filepath1, filepath2, "\n");
 
 ourModel.setup(Dataset swag, sigmoid);
 
-ourModel.train(100)
+ourModel.train(300)

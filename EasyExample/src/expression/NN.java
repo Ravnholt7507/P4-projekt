@@ -22,6 +22,8 @@ public class NN extends Expression{
 	
 	private double learning_rate;
 
+	public Function actfunc;
+	
 	public NN(int input_nodes, int hidden_nodes, int output_nodes) 
 	{
 		super();
@@ -45,11 +47,11 @@ public class NN extends Expression{
 	//    System.out.print(this.weights_ho.ToString());
 	}
 	
-	public void setup(Dataset Data, double learningRate) {
+	public void setup(Dataset Data, double learningRate, Function func) {
 		this.currentSet = Data;
 		this.learning_rate = learningRate;
+		this.actfunc = func;
 	}
-	
 	
 	public double[] feedforward(double[] input_array) {
 	// Generating the Hidden Outputs

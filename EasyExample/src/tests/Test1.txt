@@ -8,17 +8,20 @@ InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k";
 TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k.txt";
 
 
+TestData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100";
 
-TestData = "C:\\Users\\Mikkel\\Desktop\\Images\\train100";
+TestDataLabels = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt";
 
-TestDataLabels = "C:\\Users\\Mikkel\\Desktop\\Images\\train100.txt";
+i = 5;
 
-
+if (i ==5){
 
 swag.Readimage(InputData, TargetData, ",", "\n");
 
-ourModel.setup(Dataset swag, sigmoid, 0.02);
 
-ourModel.train(100)
+ourModel.setup(Dataset swag, sigmoid, 0.01);
+
+ourModel.train(200)
 
 ourModel.predict(TestData, TestDataLabels);
+}
