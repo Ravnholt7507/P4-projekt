@@ -17,6 +17,18 @@ decl
  
 if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
  ;
+ 
+condition_block
+ : '(' expr ')' stat_block
+ ;
+ 
+stat_block
+ : '{' (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)* '}'
+ | (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)
+ ;
+
+while_stat: 'while' '(' expr ')' stat_block
+ ;
 
 neural_network
  : NEURALNETWORK ID '(' INT ',' INT ',' INT ')'
@@ -44,18 +56,6 @@ read_image_data
  
 predict
  : ID '.' PREDICT '(' ID (',' ID)? ')' ';'
- ;
- 
-condition_block
- : '(' expr ')' stat_block
- ;
- 
-stat_block
- : '{' (expr | decl | print | if_stat | while_stat)* '}'
- | (expr | decl | print | if_stat | while_stat)
- ;
-
-while_stat: 'while' '(' expr ')' stat_block
  ;
 
 /* TRAIN */
