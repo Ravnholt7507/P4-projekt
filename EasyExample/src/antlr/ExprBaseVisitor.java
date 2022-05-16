@@ -152,14 +152,7 @@ public class ExprBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements E
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMultiplication(ExprParser.MultiplicationContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitAddition(ExprParser.AdditionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitParExpr(ExprParser.ParExprContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -167,6 +160,34 @@ public class ExprBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements E
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitVariable(ExprParser.VariableContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitEqualityExpr(ExprParser.EqualityExprContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitBool(ExprParser.BoolContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitMultiOp(ExprParser.MultiOpContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitAdditiveOp(ExprParser.AdditiveOpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -202,34 +223,6 @@ public class ExprBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements E
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitOrExpr(ExprParser.OrExprContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitSubtraction(ExprParser.SubtractionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitEqualityExpr(ExprParser.EqualityExprContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitBool(ExprParser.BoolContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitDivision(ExprParser.DivisionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

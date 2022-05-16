@@ -47,6 +47,10 @@ public class NN extends Expression{
 	//    System.out.print(this.weights_ho.ToString());
 	}
 	
+	public NN(Type type) {
+		super(type);
+	}
+
 	public void setup(Dataset Data, double learningRate, Function func) {
 		this.currentSet = Data;
 		this.learning_rate = learningRate;

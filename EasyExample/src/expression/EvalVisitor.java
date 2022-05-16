@@ -21,13 +21,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import antlr.ExprBaseVisitor;
 import antlr.ExprParser;
 import antlr.ExprParser.Add_dataContext;
-import antlr.ExprParser.AdditionContext;
+import antlr.ExprParser.AdditiveOpContext;
 import antlr.ExprParser.DeclContext;
-import antlr.ExprParser.DivisionContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
 import antlr.ExprParser.ExprContext;
-import antlr.ExprParser.MultiplicationContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
@@ -36,7 +34,6 @@ import antlr.ExprParser.Read_image_dataContext;
 import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SetupContext;
 import antlr.ExprParser.StringContext;
-import antlr.ExprParser.SubtractionContext;
 import antlr.ExprParser.TrainContext;
 import antlr.ExprParser.ValueContext;
 import antlr.ExprParser.VariableContext;
@@ -45,9 +42,12 @@ import antlr.ExprParser.Condition_blockContext;
 import antlr.ExprParser.DatasetContext;
 import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
+import antlr.ExprParser.MultiOpContext;
 import antlr.ExprParser.AndExprContext;
 import antlr.ExprParser.ArraydeclContext;
+import antlr.ExprParser.BoolContext;
 import antlr.ExprParser.OrExprContext;
+import antlr.ExprParser.ParExprContext;
 import antlr.ExprParser.PredictContext;
 import ArithmaticOperations.*;
 import BooleanOperations.*;
@@ -74,10 +74,13 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitDecl(DeclContext ctx) {
         String id = ctx.ID().getText();
         Expression value = this.visit(ctx.expr());
+        
+		if (memory.containsKey(id)) {
+			memory.replace(id, value);
+		}
+        
         return memory.put(id, value);
     }
-
-    
     
     //Boolean operations visitor
     @Override
@@ -99,19 +102,52 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         Expression left = this.visit(ctx.expr(0));
         Expression right = this.visit(ctx.expr(1));
         
+        
         switch(ctx.op.getType()) 
         {
-        case ExprParser.LT: 
-        	return new RelationalExpr(left.asDouble() < right.asDouble());
+        case ExprParser.LT:
+        	if (left.isDouble() && right.isDouble())
+        		return new RelationalExpr(left.asDouble() < right.asDouble());
+        	if (left.isInteger() && right.isInteger())
+            	return new RelationalExpr(left.asInt() < right.asInt());
+        	if (left.isDouble() && right.isInteger())
+        		return new RelationalExpr(left.asDouble() < right.asInt());
+        	if (left.isInteger() && right.isDouble())
+        		return new RelationalExpr(left.asInt() < right.asDouble());
+
         case ExprParser.LTEQ: 
-        	return new RelationalExpr(left.asDouble() <= right.asDouble());
+        	if (left.isDouble() && right.isDouble())
+        		return new RelationalExpr(left.asDouble() <= right.asDouble());
+        	if (left.isInteger() && right.isInteger())
+            	return new RelationalExpr(left.asInt() <= right.asInt());
+        	if (left.isDouble() && right.isInteger())
+        		return new RelationalExpr(left.asDouble() <= right.asInt());
+        	if (left.isInteger() && right.isDouble())
+        		return new RelationalExpr(left.asInt() <= right.asDouble());
+
         case ExprParser.GT: 
-        	return new RelationalExpr(left.asDouble() > right.asDouble());
+        	if (left.isDouble() && right.isDouble())
+        		return new RelationalExpr(left.asDouble() > right.asDouble());
+        	if (left.isInteger() && right.isInteger())
+            	return new RelationalExpr(left.asInt() > right.asInt());
+        	if (left.isDouble() && right.isInteger())
+        		return new RelationalExpr(left.asDouble() > right.asInt());
+        	if (left.isInteger() && right.isDouble())
+        		return new RelationalExpr(left.asInt() > right.asDouble());
+
         case ExprParser.GTEQ: 
-        	return new RelationalExpr(left.asDouble() >= right.asDouble());
+        	if (left.isDouble() && right.isDouble())
+        		return new RelationalExpr(left.asDouble() >= right.asDouble());
+        	if (left.isInteger() && right.isInteger())
+            	return new RelationalExpr(left.asInt() >= right.asInt());
+        	if (left.isDouble() && right.isInteger())
+        		return new RelationalExpr(left.asDouble() >= right.asInt());
+        	if (left.isInteger() && right.isDouble())
+        		return new RelationalExpr(left.asInt() >= right.asDouble());
+
         default:
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
-        }
+    	}
     }
 
     @Override
@@ -127,15 +163,19 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         case ExprParser.EQ: 
         	if (left.isDouble() && right.isDouble())
         		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) < SMALL_VALUE);
+        	else if (left.isBool() && right.isBool())
+        		return new RelationalExpr(left.asBoolean() == right.asBoolean());
         	else if (!left.isDouble() && !right.isDouble())
         		return new RelationalExpr(left.asInt() == right.asInt());
         	else if (left.isDouble() && !right.isDouble())
         		return new RelationalExpr(Math.abs(left.asDouble() - right.asInt()) < SMALL_VALUE);
         	else if (!left.isDouble() && right.isDouble())
-        		return new RelationalExpr(Math.abs(left.asInt() - right.asDouble()) < SMALL_VALUE);			
+        		return new RelationalExpr(Math.abs(left.asInt() - right.asDouble()) < SMALL_VALUE);		
         case ExprParser.NEQ: 
         	if (left.isDouble() && right.isDouble()) 
         		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) >= SMALL_VALUE);
+        	else if (left.isBool() && right.isBool())
+        		return new RelationalExpr(left.asBoolean() != right.asBoolean());	
         	else if (!left.isDouble() && !right.isDouble())
         		return new RelationalExpr(left.asInt() == right.asInt());
         	else if (left.isDouble() && !right.isDouble())
@@ -150,94 +190,87 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     //Arithmetic operations visitor
 	@Override
-	public Expression visitMultiplication(MultiplicationContext ctx) {
+	public Expression visitMultiOp(MultiOpContext ctx) {
 
         Expression left = visit(ctx.expr(0));
         Expression right = visit(ctx.expr(1));
         
-        if (left.isDouble() && right.isDouble())
-        	return new Multiplication(left.asDouble()  * right.asDouble());
+        String operator = ctx.op.getText();   
         
-        else if (left.isDouble() && !right.isDouble())
-        	return new Multiplication(left.asDouble() * right.asInt());
-        
-        else if (!left.isDouble() && right.isDouble())
-        	return new Multiplication(left.asInt() * right.asDouble());
-        
-        else
-        	return new Multiplication(left.asInt() * left.asInt());
-	}
-
-	@Override
-	public Expression visitAddition(AdditionContext ctx) {
-
-        Expression left = visit(ctx.expr(0));
-        Expression right = visit(ctx.expr(1));
-        
-        if (left.isDouble() && right.isDouble())
-        	return new Addition(left.asDouble()  + right.asDouble());
-        
-        else if (left.isDouble() && !right.isDouble())
-        	return new Addition(left.asDouble() + right.asInt());
-        
-        else if (!left.isDouble() && right.isDouble())
-        	return new Addition(left.asInt() + right.asDouble());
-        
-        else if (left.isString() && right.isString())
-            return new Addition(left.toString() + right.toString());
-
-        else if (!left.isString() && right.isString())
-        throw new RuntimeException("Strings skal lægges til strings");
-
-        else if (left.isString() && !right.isString())
-        throw new RuntimeException("Strings skal lægges til strings");
-        
-        else
-        	return new Addition(left.asInt() + left.asInt());
-        
-        
-	}
-	
-	@Override
-	public Expression visitDivision(DivisionContext ctx) {
-
-        Expression left = visit(ctx.expr(0));
-        Expression right = visit(ctx.expr(1));
-        
-        
-        
-        if (left.isDouble() || right.isDouble()) {
-        	if (right.asDouble() == 0)
-        	{
-        		throw new RuntimeException("Man må ikke dividere med 0");
-        	}
-        	return new Division(left.asDouble() / right.asDouble());
+        if (operator == "*"){
+        	if (left.isDouble() && right.isDouble())
+        		return new Multiplication(left.asDouble()  * right.asDouble());
+	        else if (left.isDouble() && !right.isDouble())
+	        	return new Multiplication(left.asDouble() * right.asInt());
+	        else if (!left.isDouble() && right.isDouble())
+	        	return new Multiplication(left.asInt() * right.asDouble());
+	        else
+	        	return new Multiplication(left.asInt() * right.asInt());
+	    }
+        else if (operator == "/") {
+            if (left.isDouble() || right.isDouble()) {
+            	if (right.asDouble() == 0)
+            	{
+            		throw new RuntimeException("Man må ikke dividere med 0");
+            	}
+            	return new Division(left.asDouble() / right.asDouble());
+            }
+            else
+            	if (right.asInt() == 0)
+            	{
+            		throw new RuntimeException("Man må ikke dividere med 0");
+            	}
+            return new Division(left.asInt() / right.asInt());
         }
-        else
-        	if (right.asInt() == 0)
-        	{
-        		throw new RuntimeException("Man må ikke dividere med 0");
-        	}
-        return new Division(left.asInt() / right.asInt());
+        return null;
 	}
+
+	
 	
 	@Override
-	public Expression visitSubtraction(SubtractionContext ctx) {
+	public Expression visitAdditiveOp(AdditiveOpContext ctx) {
 
-        Expression left = visit(ctx.expr(0));
-        Expression right = visit(ctx.expr(1));
+        Expression left = visit(ctx.expr(0)); // 5
+        Expression right = visit(ctx.expr(1)); // (1+2)
+    
+        int operator = ctx.op.getType();
+        //Different typecasts for additions of types int, doubles or strings.
+        if (operator == ExprParser.ADD){
+	        if (left.isDouble() && right.isDouble())
+	        	return new Addition(left.asDouble() + right.asDouble());
+	        
+	        else if (left.isDouble() && !right.isDouble())
+	        	return new Addition(left.asDouble() + right.asInt());
+	        
+	        else if (!left.isDouble() && right.isDouble()) 
+	        	return new Addition(left.asInt() + right.asDouble());
+	        
+	        else if (left.isString() && right.isString())
+	            return new Addition(left.toString() + right.toString());
+	        
+	        else if (!left.isString() && right.isString())
+	        	throw new RuntimeException("Strings skal lægges til strings");
+	        
+	        else if (left.isString() && !right.isString())
+	        	throw new RuntimeException("Strings skal lægges til strings");
+	        else 
+	        	return new Addition(left.asInt() + right.asInt());
+        }
         
-        if (left.isDouble() && right.isDouble())
-        	return new Subtraction(left.asDouble()  - right.asDouble());
-        
-        else if (left.isDouble() && !right.isDouble())
-        	return new Subtraction(left.asDouble() - right.asInt());
-        
-        else if (!left.isDouble() && right.isDouble())
-        	return new Subtraction(left.asInt() - right.asDouble());
-        
-        else
-        	return new Subtraction(left.asInt() - left.asInt());
+        else if (operator == ExprParser.SUB) {
+	        if (left.isDouble() && right.isDouble())
+	        	return new Subtraction(left.asDouble()  - right.asDouble());
+	        
+	        else if (left.isDouble() && !right.isDouble())
+	        	return new Subtraction(left.asDouble() - right.asInt());
+	        
+	        else if (!left.isDouble() && right.isDouble())
+	        	return new Subtraction(left.asInt() - right.asDouble());
+	        
+	        else
+	        	return new Subtraction(left.asInt() - right.asInt());
+	    }
+		return null;
 	}
 
 	@Override
@@ -246,21 +279,19 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         Expression value = memory.get(id);
         
         if(value == null) {
-            throw new RuntimeException("Ingen variabler i hukommelsen med det navn: " + id);
+            throw new RuntimeException("No variables in memory with that name: " + id);
         }
         return value;
     }
-	
 	
     // log override
     @Override
     public Expression visitPrint(PrintContext ctx) {
     	Expression value = this.visit(ctx.expr());
-    	System.out.println(value.value);    		
+    	System.out.println(value.value);
         return value;
     }
 	
-    
     // if override
     @Override
     public Expression visitIf_stat(If_statContext ctx) {
@@ -289,9 +320,14 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return If_stat.VOID;
     }
     
+    // expr overrides
+    @Override
+    public Expression visitParExpr(ParExprContext ctx) {
+        return this.visit(ctx.expr());
+    }
+    
     // while override
     public Expression visitWhile_stat(While_statContext ctx) {
-
         Expression value = this.visit(ctx.expr());
         while(value.asBoolean()) {
 
@@ -305,15 +341,13 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return While_stat.VOID;
     }
     
-    
     //Language Specific Overrides
-    
     @Override
     public Expression visitNeural_network(Neural_networkContext ctx) {
     	String id = ctx.ID().getText();
-    	int input = Integer.valueOf(ctx.INT(0).getText());
-    	int hidden = Integer.valueOf(ctx.INT(1).getText());
-    	int output = Integer.valueOf(ctx.INT(2).getText());
+    	int input = Integer.valueOf(ctx.expr(0).getText());
+    	int hidden = Integer.valueOf(ctx.expr(1).getText());
+    	int output = Integer.valueOf(ctx.expr(2).getText());
     	
     	Expression NeuralNetwork = new NN(input, hidden, output);
     	
@@ -326,7 +360,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	String ActFunc = ctx.ACTFUNC().getText();
     	String NetworkId = ctx.ID(0).getText();
     	String DatasetId = ctx.ID(1).getText();
-    	double LearningRate = Double.valueOf(ctx.DOUBLE().getText());
+    	double LearningRate = Double.valueOf(ctx.expr().getText());
     	
     	Dataset set = (Dataset) memory.get(DatasetId);
     	NN Network = (NN) memory.get(NetworkId);
@@ -341,7 +375,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitTrain(TrainContext ctx) {
 
     	System.out.println("Starting to train... ");
-        int epochs = Integer.valueOf(ctx.epochs().INT().getText());
+        int epochs = Integer.valueOf(ctx.expr().getText());
         String id = ctx.ID().getText();
         
         double temp_epoch = 0;
@@ -357,7 +391,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         List<double[]> inputs = fromDouble2(Network.currentSet.inputs);
         List<double[]> targets= fromDouble2(Network.currentSet.targets);
         
-        // Træner datasættet per epoke 
+        // Trains the dataset for each epoch
       	for (int j = 1; j<epochs; j++) {
       		for (int m = 0; m<DataInputs; m++) {
       			Network.train(inputs.get(m), targets.get(m), j);
@@ -498,30 +532,14 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	  		}
   		} 
       	System.out.println("TEST HITRATE:  " + (hitRateCounter / (double) TestInput.size()) * 100);
-      	
-    
+
     	return Network;
     }
 
     @Override
-    public Expression visitArraydecl(ArraydeclContext ctx) {
-    	String id = ctx.ID().getText();
-    
-    	Double[] numbers = new Double[ctx.array().value().size()];
-    	
-    	for(int i = 0;i < ctx.array().value().size();i++)
-    	{
-    	    numbers[i] = Double.parseDouble(ctx.array().value(i).getText());
-    	}
-
-    	Expression array = new ArrayDouble_Type(numbers);
-    	
-    	return memory.put(id, array);
-    }
-    
-
-    @Override
     public Expression visitRead_data(Read_dataContext ctx) {
+    	
+    	System.out.print("SWAA");
     	
     	String idFile1 = ctx.getChild(4).getText();  	
     	Expression filePath1 = memory.get(idFile1);
@@ -544,7 +562,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override 
     public Expression visitRead_image_data(Read_image_dataContext ctx) {
-    	
+
     	String idFile1 = ctx.ID(1).getText();  	
     	Expression filePath1 = memory.get(idFile1);
 
@@ -620,11 +638,40 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     }
     
     @Override
+    public Expression visitBool(BoolContext ctx) {
+    	String boolText = ctx.getText();
+    	switch(boolText) {
+    		case "true": return new Boolean_Type(true);
+    		case "TRUE": return new Boolean_Type(true);
+    		case "false": return new Boolean_Type(false);
+    		case "FALSE": return new Boolean_Type(false);
+    		default: return null;
+    	}
+    }
+    
+    @Override
     public Expression visitDouble(DoubleContext ctx) {
         return new Number(Double.valueOf(ctx.getText()));
     }
     
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     //Helper functions
     public double[] ToArray(List<Double> list) {
 		return list.stream().mapToDouble(d -> d).toArray();
@@ -650,14 +697,3 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     }
     
 }
-
-
-//	   double expected = helper(fromDouble(Network.currentSet.targets.get(i)));
-/* 	   if(PrettyPrintGuess(Network.feedforward(fromDouble(Network.currentSet.inputs.get(i))), expected) == 1)
-   {
-   	hitRateCounter += 1;
-   }
-} 
-	System.out.println("hitrate: " + hitRateCounter / (double) epochs*100 + "% ");
-	System.out.println(hitRateCounter);
-*/

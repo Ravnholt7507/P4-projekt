@@ -31,6 +31,7 @@ import javax.imageio.ImageIO;
 import Statements.Read;
 import expression.Expression;
 import expression.FilenameComparator;
+import expression.Type;
 
 public class Dataset extends Expression {
 	
@@ -40,6 +41,10 @@ public class Dataset extends Expression {
 	//Constructors
 	public Dataset(Object value) {
 		super(value);
+	}
+	
+	public Dataset(Type type) {
+		super(type);
 	}
 
 	public Dataset() {

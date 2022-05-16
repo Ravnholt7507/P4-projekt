@@ -1,6 +1,7 @@
 package app;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -11,6 +12,7 @@ import antlr.ExprLexer;
 import antlr.ExprParser;
 import expression.EvalVisitor;
 import expression.MyErrorListener;
+import expression.TypeChecker;
 
 public class ExpressionApp {
 
@@ -33,15 +35,18 @@ public class ExpressionApp {
 	         else {
 	             // Create a visitor for converting the 
 	             //parse tree into expression/program objects
-	             EvalVisitor visitor = new EvalVisitor();
-	             visitor.visit(antlrAST);
-	             
-	             if(visitor.semanticErrors.isEmpty()) {
+	        	 
+	        	 TypeChecker Checkervisitor = new TypeChecker(new ArrayList<String>());
+	        	 Checkervisitor.visit(antlrAST);
+	        	 
+	             if(Checkervisitor.semanticErrors.isEmpty()) {
 	                 System.out.println("worked");
 	                
+		             EvalVisitor visitor = new EvalVisitor();
+		             visitor.visit(antlrAST);     
 	             }
 	             else {
-	                 for(String err: visitor.semanticErrors) {
+	                 for(String err: Checkervisitor.semanticErrors) {
 	                     System.out.println(err);
 	                 }
 	             } 

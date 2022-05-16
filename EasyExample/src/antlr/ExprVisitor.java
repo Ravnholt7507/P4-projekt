@@ -129,19 +129,12 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAndExpr(ExprParser.AndExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code Multiplication}
+	 * Visit a parse tree produced by the {@code parExpr}
 	 * labeled alternative in {@link ExprParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMultiplication(ExprParser.MultiplicationContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Addition}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAddition(ExprParser.AdditionContext ctx);
+	T visitParExpr(ExprParser.ParExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code Variable}
 	 * labeled alternative in {@link ExprParser#expr}.
@@ -149,6 +142,34 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitVariable(ExprParser.VariableContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code EqualityExpr}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEqualityExpr(ExprParser.EqualityExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Bool}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBool(ExprParser.BoolContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code MultiOp}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMultiOp(ExprParser.MultiOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code AdditiveOp}
+	 * labeled alternative in {@link ExprParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAdditiveOp(ExprParser.AdditiveOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code String}
 	 * labeled alternative in {@link ExprParser#expr}.
@@ -184,34 +205,6 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitOrExpr(ExprParser.OrExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Subtraction}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSubtraction(ExprParser.SubtractionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code EqualityExpr}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEqualityExpr(ExprParser.EqualityExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Bool}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBool(ExprParser.BoolContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code Division}
-	 * labeled alternative in {@link ExprParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDivision(ExprParser.DivisionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ExprParser#print}.
 	 * @param ctx the parse tree
