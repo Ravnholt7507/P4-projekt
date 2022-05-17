@@ -8,7 +8,7 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
+prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
     ;
     
 decl		
@@ -31,38 +31,38 @@ while_stat: 'while' '(' expr ')' stat_block
  ;
 
 neural_network
- : NEURALNETWORK ID '(' INT ',' INT ',' INT ')'
+ : NEURALNETWORK ID '(' expr ',' expr ',' expr ')' ';'
  ;
 
 setup
- : ID '.' SETUP '(' DATASET ID (',' ACTFUNC)? (',' DOUBLE)? ')' ';'
+ : ID '.' SETUP '(' DATASET ID (',' ACTFUNC)? (',' expr)? ')' ';'
  ;
- 
+
 dataset
  : DATASET ID ';'
  ;
- 
+
 add_data
  : ID '.' ADDDATA '(' (array ',' array ( ';' array ',' array)* )?  ')' ';'
  ;
- 
+
 read_data
  : ID '.' READDATA '(' ID ',' ID  ',' STRING ',' STRING ')' ';'
  ;
- 
+
 read_image_data
  : ID '.' READIMAGE '(' ID ',' ID ',' STRING ',' STRING ')' ';'
  ;
- 
+
 predict
  : ID '.' PREDICT '(' ID (',' ID)? ')' ';'
  ;
 
 /* TRAIN */
-train: ID '.' TRAIN '(' epochs ')'
+train: ID '.' TRAIN '(' expr ')'
  ;
 
-epochs: INT
+epochs: INT								
  ; 
  
 /* ARRAYS */
@@ -79,14 +79,13 @@ value: INT | DOUBLE
    
 /* ANTLR resolves ambiguities by first alternative given */
 
-expr: expr '*' expr                 		# Multiplication
-    | expr '/' expr							# Division
-    | expr '+' expr                 		# Addition
-    | expr '-' expr							# Subtraction
+expr: expr op=(MULT | DIV) expr				# MultiOp
+    | expr op=(ADD | SUB) expr              # AdditiveOp
     | expr op=(LTEQ | GTEQ | LT | GT) expr  # RelationalExpr
     | expr op=(EQ | NEQ) expr               # EqualityExpr
  	| expr AND expr                         # AndExpr
  	| expr OR expr                          # OrExpr
+ 	| LPAR expr RPAR						# parExpr
  	| BOOL									# Bool
     | ID                            		# Variable
     | DOUBLE 	                      		# Double
@@ -103,7 +102,6 @@ read:
  ;
 
 /* Tokens */
-
 TRAIN:'train';
 ACTFUNC:'sigmoid' | 'Sigmoid' | 'Softmax' | 'SoftMax' | 'relu' | 'Relu' | 'ReLu';
 ARRAY:'array' | 'Array';
@@ -115,6 +113,12 @@ READDATA: 'ReadData' | 'Readdata' | 'readdata';
 PREDICT: 'predict' | 'Predict';
 READIMAGE: 'Readimage' | 'readimage';
 
+/* Arithmatic operator */
+MULT: '*';
+DIV: '/';
+ADD: '+';
+SUB: '-';
+
  /* Boolean operators */
 OR : '||';
 AND : '&&';
@@ -124,10 +128,13 @@ GT : '>';
 LT : '<';
 GTEQ : '>=';
 LTEQ : '<=';
+LPAR : '(';
+RPAR : ')';
+
 
 /* Types */
 BOOL 
-: ('true' | 'false');
+: ('true' | 'TRUE' | 'false' | 'FALSE');
 
 INT
 : '0' | '-'?[1-9][0-9]*;
