@@ -44,7 +44,16 @@ public class NN extends Expression{
 	    this.bias_o.randomize();
 	    this.learning_rate = 0.1;   
 	    
-	//    System.out.print(this.weights_ho.ToString());
+	}
+	
+	public int getOutputSize() {
+		return output_nodes;
+	}
+	
+	public void InitData() {
+		this.currentSet = new Dataset();
+		this.currentSet.inputs = new ArrayList<Double[]>();
+		this.currentSet.targets = new ArrayList<Double[]>();
 	}
 	
 	public NN(Type type) {

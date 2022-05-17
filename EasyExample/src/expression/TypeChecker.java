@@ -62,11 +62,15 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	public Expression visitOrExpr(OrExprContext ctx) {
 		Expression left = visit(ctx.getChild(0));
 		Expression right = visit(ctx.getChild(2));
+		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
 
 		if (left.type == Type.BoolT && right.type == Type.BoolT) {
 			return new OrExpr(Type.BoolT);
 		}
-		semanticErrors.add("Expressions on either side of || or && must be of type bool");
+		semanticErrors.add("Error: Expressions on either side of || or && must be of type bool (" + "Line: " + line + ", " + "Col: " + col + ")");
 		
 		return new Error_Type(Type.ErrorT);
 	}
@@ -111,7 +115,7 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		if(left.type == Type.StringT && right.type == Type.StringT) {
 			return new EqualityExpr(Type.BoolT);
 		}
-		semanticErrors.add("Values used in equality are not compatible (" + line + ", " + col+")");
+		semanticErrors.add("Error: Values used in equality are not compatible (" + line + ", " + col+")");
 		return new Error_Type(Type.ErrorT);
 	}
 	
@@ -165,11 +169,11 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		int col = tokenid.getCharPositionInLine();
 		
 		if(!(left.type == Type.DoubleT || left.type == Type.IntT) || !(right.type == Type.DoubleT || right.type == Type.IntT)) {
-			semanticErrors.add("values used in must be of type int or float");
+			semanticErrors.add("Error: values used in must be of type int or float (" + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		
         if (ctx.op == null) {
-            throw new UnsupportedOperationException("An operator of / or * is required to perform the operation (" + line + ", " + col);
+            throw new UnsupportedOperationException("Error: An operator of / or * is required to perform the operation (" +"Line: "+ line + ", " + "Col: "+ col);
         }
         String operator = ctx.op.getText();    
         if (operator == "/") {
@@ -197,14 +201,18 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
         Expression left = visit(ctx.getChild(0));
         Expression right = visit(ctx.getChild(2));
         
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+        
         if (ctx.op == null) {
-            throw new UnsupportedOperationException("An operator of + or - is required to perform the operation");
+            throw new UnsupportedOperationException("Error: An operator of + or - is required to perform the operation ( "+"Line: "+line+", "+" Col: "+ col+")");
         }
         
         // Make sure left and right expressions are correct
         if (!left.type.equals(Type.IntT) && !left.type.equals(Type.DoubleT) && !left.type.equals(Type.StringT) && 
         	!right.type.equals(Type.IntT) && !right.type.equals(Type.DoubleT) && !right.type.equals(Type.StringT)) {
-        	semanticErrors.add("Types for arithmetic operation not correct");
+        	semanticErrors.add("Error: Types for arithmetic operation not correct (" +"Line: " + line + ", " + "Col: " + col + ")");
         	return new Error_Type(Type.ErrorT);
         }
         else {
@@ -214,9 +222,13 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	
 	public Expression visitIf_stat(If_statContext ctx) {
 		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 		Expression expr = visit(ctx.condition_block(0).expr());
 	    if (! expr.type.equals(Type.BoolT)) // Find expression type 
-	        semanticErrors.add("Boolean expression expected here");
+	        semanticErrors.add("Error: Boolean expression expected here ( " + "Line: " + line + ", " + "Col: " + col + ")");
 	    visit(ctx.condition_block(0).stat_block()); //Visit first command from if
 	    if (ctx.stat_block() != null)
 	    	visit(ctx.stat_block()); //Visit second command from else (if it exists)
@@ -224,20 +236,29 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	}
 	
 	public Expression visitWhile_stat(While_statContext ctx) {
+		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 	    Expression expr = visit(ctx.expr());
 	    if (!expr.type.equals(Type.BoolT)) // Conditional expression must evaluate to bool type
-	      semanticErrors.add("Boolean expression expected here");
+	      semanticErrors.add("Error: Boolean expression expected here ( " + "Line: " + line + ", "+ "Col: " + col + ")");
 	    visit(ctx.stat_block());
 	    return null;
 	}
  	
 	public Expression visitDataset(DatasetContext ctx) {
+		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
     	String id = ctx.ID().getText();
-    	
     	Expression Set = new Dataset(Type.DataSetT);
     	
 		if(SymbolTable.containsKey(id)) {
-			semanticErrors.add("Error: Dataset " + id + " already declared");
+			semanticErrors.add("Error: Dataset " + id + " already declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		if(!SymbolTable.containsKey(id)) {
 			SymbolTable.put(id,Set);
@@ -248,12 +269,16 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	public Expression visitRead_image_data(Read_image_dataContext ctx) {
 		String DatasetID = ctx.ID(0).getText();
 		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 		if (!SymbolTable.containsKey(DatasetID)) {
-			semanticErrors.add("Neural network with id: " + DatasetID + "not declared");
+			semanticErrors.add("Error: Neural network with id: " + DatasetID + "not declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		Expression DataSet =  SymbolTable.get(DatasetID);
 		if (!DataSet.type.equals(Type.DataSetT)) {
-			semanticErrors.add("incompatible type: ReadData must be used with type Network");
+			semanticErrors.add("Error: incompatible types: ReadImageData must be used with type Network( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		String InputStringID = ctx.ID(1).getText();
 		String OutputStringID = ctx.ID(2).getText();
@@ -262,25 +287,29 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		Expression OutputExpr = SymbolTable.get(OutputStringID);
 		
 		if (!(InputExpr.type.equals(Type.StringT) && OutputExpr.type.equals(Type.StringT)))
-			semanticErrors.add("First two parameters must be of type string");	
+			semanticErrors.add("Error: First two parameters must be of type string ( " + "Line: " + line + ", " + "Col: " + col + ")");	
 		return null;
 	}
 	
 	@Override
 	public Expression visitNeural_network(Neural_networkContext ctx) {
+		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 		String id = ctx.ID().getText();
 		Expression left = visit(ctx.expr(0));
 		Expression middle = visit(ctx.expr(1));
 		Expression right = visit(ctx.expr(2));  
 		
 		if(SymbolTable.containsKey(id)) {
-			semanticErrors.add("Error: variable " + id + " already declared");
+			semanticErrors.add("Error: variable " + id + " already declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		
 		if(left.type != Type.IntT || middle.type != Type.IntT || right.type != Type.IntT){
-			semanticErrors.add("Values in neural network must be of type int");
+			semanticErrors.add("Error: Values in neural network must be of type int ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
-	
 		
 		Expression network = new NN_Type(Type.NetworkT);		
 
@@ -290,36 +319,45 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	}
 	
 	public Expression visitSetup(SetupContext ctx) {
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 		String modelID =  ctx.ID(0).getText();
 		String datasetID = ctx.ID(1).getText();
 		Expression learningRate = visit(ctx.expr());
 
 		if(!SymbolTable.containsKey(modelID) || !SymbolTable.containsKey(datasetID))
-			semanticErrors.add("Both Neural Network and Dataset must be defined");
+			semanticErrors.add("Error: Both Neural Network and Dataset must be defined ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		
 		if(!SymbolTable.get(modelID).type.equals(Type.NetworkT)) 
-			semanticErrors.add("Variable" + modelID + "Must be of type model" );		
+			semanticErrors.add("Error: Variable" + modelID + "Must be of type model ( " + "Line: " + line + ", " + "Col: " + col + ")" );		
 		
 		if (!SymbolTable.get(datasetID).type.equals(Type.DataSetT))
-			semanticErrors.add("Variable" + datasetID + "Must be of type dataset" );	
+			semanticErrors.add("Error: Variable" + datasetID + "Must be of type dataset ( " + "Line: " + line + ", " + "Col: " + col + ")" );	
 		
 		if(!learningRate.type.equals(Type.DoubleT)) {
-			semanticErrors.add("Value must be of type double");
+			semanticErrors.add("Error: Value must be of type double ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		
 		return null;
 	}
 	
 	public Expression visitTrain(TrainContext ctx) {
+		
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
 		String id =  ctx.ID().getText();
 		Expression epochs = visit(ctx.expr());
 
 		if(!SymbolTable.containsKey(id)) {
-			semanticErrors.add("Neural Network must be defined for train command");
+			semanticErrors.add("Error: Neural Network must be defined for train command ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
-		
+
 		if(!epochs.type.equals(Type.IntT)) {
-			semanticErrors.add("Value must be of type int");
+			semanticErrors.add("Error: Value must be of type int ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		
 		return null;
@@ -330,11 +368,13 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		String left = ctx.ID(1).getText();
 		String right = ctx.ID(2).getText();
 		
-		if(modelid == null || left == null || right == null) {
-			semanticErrors.add("Both Neural Network and datasets  must be defined");
-		}
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+		
+		
 		if(!SymbolTable.containsKey(modelid) || !SymbolTable.containsKey(left) || !SymbolTable.containsKey(right)){
-			semanticErrors.add("Both Neural Network and Datasets  must be defined");
+			semanticErrors.add("Error: Both Neural Network and Datasets  must be defined ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		return null;
 	}

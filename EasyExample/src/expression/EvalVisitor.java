@@ -165,6 +165,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) < SMALL_VALUE);
         	else if (left.isBool() && right.isBool())
         		return new RelationalExpr(left.asBoolean() == right.asBoolean());
+        	else if (left.isString() && right.isString())
+        		return new RelationalExpr(left.asString() == right.asString());
         	else if (!left.isDouble() && !right.isDouble())
         		return new RelationalExpr(left.asInt() == right.asInt());
         	else if (left.isDouble() && !right.isDouble())
@@ -175,7 +177,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         	if (left.isDouble() && right.isDouble()) 
         		return new RelationalExpr(Math.abs(left.asDouble() - right.asDouble()) >= SMALL_VALUE);
         	else if (left.isBool() && right.isBool())
-        		return new RelationalExpr(left.asBoolean() != right.asBoolean());	
+        		return new RelationalExpr(left.asBoolean() != right.asBoolean());
+        	else if (left.isString() && right.isString())
+        		return new RelationalExpr(left.asString() != right.asString());
         	else if (!left.isDouble() && !right.isDouble())
         		return new RelationalExpr(left.asInt() == right.asInt());
         	else if (left.isDouble() && !right.isDouble())
@@ -357,6 +361,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitSetup(SetupContext ctx) {
     	
+    	final String ANSI_RESET = "\u001B[0m";
+    	final String ANSI_YELLOW = "\u001B[33m";
+    	
     	String ActFunc = ctx.ACTFUNC().getText();
     	String NetworkId = ctx.ID(0).getText();
     	String DatasetId = ctx.ID(1).getText();
@@ -364,24 +371,51 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	
     	Dataset set = (Dataset) memory.get(DatasetId);
     	NN Network = (NN) memory.get(NetworkId);
+    	
+    	try {
+        	if (set.targets.get(0).length != Network.getOutputSize())
+        	{
+        		System.out.println(set.targets.get(0).length);
+        		System.out.println(Network.getOutputSize());
+        		throw new Exception();
+        	}
+    	}
+    	catch (Exception e) {
+    		System.out.println("Warning: Output dimension from neural network does not match target file");
+    	}
+    	
     	Network.setup(set, LearningRate, x -> (1/( 1 + Math.pow(Math.E,(-1*x)))));
     	
     	memory.replace(NetworkId, Network);
-    	
     	return set; 
     }
     
     @Override
     public Expression visitTrain(TrainContext ctx) {
 
+		Token tokenid = ctx.getStart();
+		int line = tokenid.getLine();
+		int col = tokenid.getCharPositionInLine();
+    	
     	System.out.println("Starting to train... ");
         int epochs = Integer.valueOf(ctx.expr().getText());
         String id = ctx.ID().getText();
         
+        //Helper vars
         double temp_epoch = 0;
-        
-        NN Network = (NN) memory.get(id);
         double hitRateCounter = 0;
+        
+        //get neural network from memory
+        NN Network = (NN) memory.get(id);
+        
+        try {
+		if (Network.currentSet == null) 
+			throw new Exception();
+		}
+        catch(Exception e) {
+        	System.out.print("Exception on line " + line + ", " + "Dataset not applied to instance of model " + id+".");
+        	System.exit(0);
+        }
         
         int DataInputs = Network.currentSet.inputs.size();
 
@@ -521,6 +555,26 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		Expression LabelDataPath = memory.get(LabelString);	
     	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels((String) LabelDataPath.value, ",", "\n"));
     	
+    	//Make sure dimensions for input and label match
+	    try {
+	    	if (TestInput.size() != testLabels.size())
+	    		throw new Exception();
+	    }
+	    catch(Exception e) {
+	    	System.out.println("Error: Input size must match output size in predict");
+	    	System.out.println("Termination program");
+	    	System.exit(0);
+	    }
+	    
+	    //Make sure output dimensions match neural network
+    	try {
+        	if (testLabels.get(0).length != Network.getOutputSize())
+        		throw new Exception();
+    	}
+    	catch (Exception e) {
+    		System.out.println("Warning: Output dimension from neural network does not match target file in prediction");
+    	}
+    	
     	for ( int j =0; j<10; j++) {
      		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
     		System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 
@@ -538,8 +592,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 
     @Override
     public Expression visitRead_data(Read_dataContext ctx) {
-    	
-    	System.out.print("SWAA");
     	
     	String idFile1 = ctx.getChild(4).getText();  	
     	Expression filePath1 = memory.get(idFile1);
@@ -629,7 +681,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     public Expression visitInt(IntContext ctx) {
         return new Number(Integer.valueOf(ctx.getText()));
     }
-    
     
     @Override
     public Expression visitString(StringContext ctx) {

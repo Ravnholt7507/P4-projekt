@@ -125,6 +125,16 @@ public class Dataset extends Expression {
 	    List<Double[]> Input = readImages(filepath1);
 	    List<Double[]> Expected = readResultFile(filepath2, Delimiter, Delimiter2);
 	    
+	    try {
+	    	if (Input.size() != Expected.size())
+	    		throw new Exception();
+	    }
+	    catch(Exception e) {
+	    	System.out.println("Error: Input size must match output size (In read data)");
+	    	System.out.println("Termination program");
+	    	System.exit(0);
+	    }
+	    
 	    this.inputs = Input;
 	    this.targets = Expected;
 
@@ -227,9 +237,8 @@ public class Dataset extends Expression {
                 String ReadNextSubstringed;
                 
                 DelimitPlace = ReadNext.indexOf(StringDelimiter1) + 1;
-                
+                System.out.println(DelimitPlace + " " + (ReadNext.length()-1));
                 ReadNextSubstringed = ReadNext.substring(DelimitPlace, ReadNext.length()-1);
-             
                 Double[] currentArrayInput = new Double[ReadNextSubstringed.length()];
                 
                 for (int i = 0; currentArrayInput.length > i; i++) {
@@ -241,7 +250,6 @@ public class Dataset extends Expression {
                      currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
                 
                 Inputdata.add(currentArrayInput);
-                
             }
             myFileReader.close();
             
@@ -254,7 +262,6 @@ public class Dataset extends Expression {
         //In case try fails, return trash list
         List<Double[]> blabla = new ArrayList<Double[]>();
         return blabla;
-        
     }
 
 	//Methods for reading arrays online
@@ -312,10 +319,11 @@ public class Dataset extends Expression {
 
 	            List<Double[]> Inputdata = new ArrayList<Double[]>();
 	           
-	            
+	            int count = 0;
 	            //Reads each line, gets relevant int and adds it to Inputdata
 	            while(myFileReader.hasNextLine())
 	            {
+	            	System.out.println(count);
 	                int DelimitPlace = 0;
 	                String ReadNext = new String(myFileReader.next());
 	                String ReadNextSubstringed;
@@ -335,7 +343,7 @@ public class Dataset extends Expression {
 	                     currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
 	                
 	                Inputdata.add(currentArrayInput);
-	                
+	                count += 1;
 	            }
 	            myFileReader.close();
 	            

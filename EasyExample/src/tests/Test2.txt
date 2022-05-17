@@ -1,9 +1,6 @@
-a = true;
-
-b = true; 
-
-if (a >= b){
-
-Print(a);
-
+a = "StringExample";
+b = 5;
+if (a <= b)
+{
+	Print(a);
 }
