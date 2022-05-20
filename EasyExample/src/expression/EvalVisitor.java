@@ -26,6 +26,8 @@ import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
 import antlr.ExprParser.ExprContext;
+import antlr.ExprParser.FunctionDeclContext;
+import antlr.ExprParser.FunctiondeclContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
@@ -190,8 +192,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
         }
     }
-
-    
+ 
     //Arithmetic operations visitor
 	@Override
 	public Expression visitMultiOp(MultiOpContext ctx) {
@@ -215,21 +216,19 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             if (left.isDouble() || right.isDouble()) {
             	if (right.asDouble() == 0)
             	{
-            		throw new RuntimeException("Man må ikke dividere med 0");
+            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
             	}
             	return new Division(left.asDouble() / right.asDouble());
             }
             else
             	if (right.asInt() == 0)
             	{
-            		throw new RuntimeException("Man må ikke dividere med 0");
+            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
             	}
             return new Division(left.asInt() / right.asInt());
         }
         return null;
 	}
-
-	
 	
 	@Override
 	public Expression visitAdditiveOp(AdditiveOpContext ctx) {
@@ -253,10 +252,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	            return new Addition(left.toString() + right.toString());
 	        
 	        else if (!left.isString() && right.isString())
-	        	throw new RuntimeException("Strings skal lægges til strings");
+	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
 	        
 	        else if (left.isString() && !right.isString())
-	        	throw new RuntimeException("Strings skal lægges til strings");
+	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
 	        else 
 	        	return new Addition(left.asInt() + right.asInt());
         }
@@ -349,9 +348,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitNeural_network(Neural_networkContext ctx) {
     	String id = ctx.ID().getText();
-    	int input = Integer.valueOf(ctx.expr(0).getText());
-    	int hidden = Integer.valueOf(ctx.expr(1).getText());
-    	int output = Integer.valueOf(ctx.expr(2).getText());
+    	int input = Integer.valueOf(ctx.atom(0).getText());
+    	int hidden = Integer.valueOf(ctx.atom(1).getText());
+    	int output = Integer.valueOf(ctx.atom(2).getText());
     	
     	Expression NeuralNetwork = new NN(input, hidden, output);
     	
@@ -361,13 +360,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitSetup(SetupContext ctx) {
     	
-    	final String ANSI_RESET = "\u001B[0m";
-    	final String ANSI_YELLOW = "\u001B[33m";
-    	
     	String ActFunc = ctx.ACTFUNC().getText();
-    	String NetworkId = ctx.ID(0).getText();
-    	String DatasetId = ctx.ID(1).getText();
-    	double LearningRate = Double.valueOf(ctx.expr().getText());
+    	String NetworkId = ctx.ID().getText();
+    	String DatasetId = ctx.atom(0).getText();
+    	double LearningRate = Double.valueOf(ctx.atom(1).getText());
     	
     	Dataset set = (Dataset) memory.get(DatasetId);
     	NN Network = (NN) memory.get(NetworkId);
@@ -445,8 +441,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
       	
         return super.visitTrain(ctx);
     }
-    
-    
+      
     public boolean GetHit(int expected, double[] actual) {
     	int guess = 0;
     	double max = 0;
@@ -541,17 +536,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override 
     public Expression visitPredict(PredictContext ctx) {
-        String id = ctx.getChild(0).getText();
+        String id = ctx.ID().getText();
         NN Network = (NN) memory.get(id);  
         double hitRateCounter = 0;
         
         //Get Inputs from source
-    	String path = ctx.getChild(4).getText();  	
+    	String path = ctx.atom(0).getText();  	
     	Expression DataPath = memory.get(path);	
     	List<double[]> TestInput = fromDouble2(Dataset.readImages((String) DataPath.value));
     	
     	//Get Output labels from source
-		String LabelString = ctx.ID(2).getText();
+		String LabelString = ctx.atom(1).getText();
 		Expression LabelDataPath = memory.get(LabelString);	
     	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels((String) LabelDataPath.value, ",", "\n"));
     	
@@ -602,7 +597,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	String Delimiter1 = ctx.getChild(8).getText();
     	String Delimiter2 = ctx.getChild(10).getText();
     	
-    	String id = ctx.ID(0).getText();
+    	String id = ctx.ID().getText();
 		Dataset set = (Dataset) memory.get(id);
 		
 		set.ReadDataInput((String) filePath1.value, Delimiter1, Delimiter2, "in");
@@ -615,17 +610,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override 
     public Expression visitRead_image_data(Read_image_dataContext ctx) {
 
-    	String idFile1 = ctx.ID(1).getText();  	
+    	String idFile1 = ctx.atom(0).getText();  	
     	Expression filePath1 = memory.get(idFile1);
 
-    	String idFile2 = ctx.ID(2).getText();  	
+    	String idFile2 = ctx.atom(1).getText();  	
     	Expression filePath2 = memory.get(idFile2);
     	
-    	String Delimiter1 = ctx.STRING(0).getText();
+    	String Delimiter1 = ctx.atom(2).getText();
     	
-    	String Delimiter2 = ctx.STRING(1).getText();
+    	String Delimiter2 = ctx.atom(3).getText();
     	
-    	String id = ctx.ID(0).getText();
+    	String id = ctx.ID().getText();
 		Dataset set = (Dataset) memory.get(id);
     	
     	set.Run((String) filePath1.value, (String) filePath2.value, Delimiter1, Delimiter2);

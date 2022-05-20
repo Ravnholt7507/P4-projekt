@@ -31,11 +31,11 @@ while_stat: 'while' '(' expr ')' stat_block
  ;
 
 neural_network
- : NEURALNETWORK ID '(' expr ',' expr ',' expr ')' ';'
+ : NEURALNETWORK ID '(' atom ',' atom ',' atom ')' ';'
  ;
 
 setup
- : ID '.' SETUP '(' DATASET ID (',' ACTFUNC)? (',' expr)? ')' ';'
+ : ID '.' SETUP '(' DATASET atom (',' ACTFUNC)? (',' atom)? ')' ';'
  ;
 
 dataset
@@ -47,24 +47,22 @@ add_data
  ;
 
 read_data
- : ID '.' READDATA '(' ID ',' ID  ',' STRING ',' STRING ')' ';'
+ : ID '.' READDATA '(' atom ',' atom  ',' atom ',' atom ')' ';'
  ;
 
 read_image_data
- : ID '.' READIMAGE '(' ID ',' ID ',' STRING ',' STRING ')' ';'
+ : ID '.' READIMAGE '(' atom ',' atom ',' atom ',' atom ')' ';'
  ;
 
 predict
- : ID '.' PREDICT '(' ID (',' ID)? ')' ';'
+ : ID '.' PREDICT '(' atom (',' atom)? ')' ';'
  ;
 
 /* TRAIN */
-train: ID '.' TRAIN '(' expr ')'
+train
+ : ID '.' TRAIN '(' expr ')'
  ;
 
-epochs: INT								
- ; 
- 
 /* ARRAYS */
 
 arraydecl
@@ -85,7 +83,10 @@ expr: expr op=(MULT | DIV) expr				# MultiOp
     | expr op=(EQ | NEQ) expr               # EqualityExpr
  	| expr AND expr                         # AndExpr
  	| expr OR expr                          # OrExpr
- 	| LPAR expr RPAR						# parExpr
+ 	| atom									# Types
+ 	;
+
+atom: LPAR expr RPAR						# ParExpr
  	| BOOL									# Bool
     | ID                            		# Variable
     | DOUBLE 	                      		# Double
@@ -93,12 +94,28 @@ expr: expr op=(MULT | DIV) expr				# MultiOp
     | STRING								# String
     ;
 
-print:
- 'Print' '(' (expr | ID) ')' ';'
+networkExpr: decl							
+	| if_stat								
+	| while_stat							
+	| neural_network						
+	| setup									
+	| dataset								
+	| add_data								
+	| read_data								
+	| read_image_data						
+	| predict								
+	| train									
+	| arraydecl
+	| print
+	| read								
+	;
+	
+print
+ : 'Print' '(' (expr | ID) ')' ';'
  ;
  
-read:
- 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
+read
+ : 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
  ;
 
 /* Tokens */
@@ -112,6 +129,7 @@ ADDDATA: 'AddData' | 'addData';
 READDATA: 'ReadData' | 'Readdata' | 'readdata';
 PREDICT: 'predict' | 'Predict';
 READIMAGE: 'Readimage' | 'readimage';
+FUNCTION: 'Function' | 'function' | 'FUNCTION';
 
 /* Arithmatic operator */
 MULT: '*';
