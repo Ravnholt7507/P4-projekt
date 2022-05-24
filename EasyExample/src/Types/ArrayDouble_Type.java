@@ -1,7 +1,6 @@
 package Types;
 
 import expression.Expression;
-import expression.Type;
 
 public class ArrayDouble_Type extends Expression {
 	

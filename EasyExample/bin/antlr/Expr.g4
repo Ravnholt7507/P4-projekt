@@ -110,7 +110,7 @@ read:
 
 /* Terminal Formation rules */
 TRAIN:'train';
-ACTFUNC:'sigmoid' | 'Sigmoid' | 'Softmax' | 'SoftMax' | 'relu' | 'Relu' | 'ReLu';
+ACTFUNC:'sigmoid' | 'Sigmoid' | 'relu' | 'Relu' | 'ReLu' | 'LeakyReLu' | 'Leakyrelu'|'leakyrelu';
 NEURALNETWORK:'NeuralNetwork';
 SETUP:'Setup' | 'setup';
 DATASET: 'Dataset' | 'dataset';

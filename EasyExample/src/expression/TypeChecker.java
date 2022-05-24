@@ -1,17 +1,10 @@
 package expression;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import ArithmaticOperations.Multiplication;
 import BooleanOperations.AndExpr;
 import BooleanOperations.EqualityExpr;
 import BooleanOperations.OrExpr;
@@ -472,7 +465,7 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		}
 	    return SymbolTable.get(id); //Retrieve id & type from symbol table
 	}
-
+	@SuppressWarnings("unused")
 	@Override
 	public Expression visitInt(IntContext ctx) {
 		String numText = ctx.getChild(0).getText();
@@ -486,14 +479,13 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
         }
 		return new Int_Type(Type.IntT);
 	}
-
+	@SuppressWarnings("unused")
 	@Override
 	public Expression visitDouble(DoubleContext ctx) {
 		String numText = ctx.getChild(0).getText();
-		double num =  Double.valueOf(numText);
 		
 		try {
-			num =  Double.parseDouble(numText);	
+			double num =  Double.parseDouble(numText);	
 		}
         catch (Exception e) {
             System.out.println("Type error");

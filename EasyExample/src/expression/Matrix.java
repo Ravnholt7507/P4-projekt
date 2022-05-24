@@ -1,6 +1,5 @@
 package expression;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 class Matrix {
@@ -114,7 +113,6 @@ class Matrix {
     return result;
   }
 
-
   public static Matrix DotProduct(Matrix a, Matrix b) {
     if (a.cols != b.rows) {
       System.out.print("Columns of A must match rows of B.");
@@ -174,8 +172,6 @@ class Matrix {
   public static Matrix MSE(Matrix actual, Matrix prediction) {
 
 	    Matrix Tempresult = new Matrix(actual.rows, actual.cols);
-	    Matrix MSE = new Matrix(1, 1);
-	    
 	    for (int i = 0; i < Tempresult.rows; i++) {
 	      for (int j = 0; j < Tempresult.cols; j++) {
 	          Tempresult.data[i][j] = (Math.pow((actual.data[i][j] - prediction.data[i][j]),2));
@@ -194,8 +190,22 @@ class Matrix {
       return mean / a.rows;
   }
   
-  
-  
+  public void Relu(){
+      for (int i = 0; i < this.rows; i++) {
+	      for (int j = 0; j < this.cols; j++) {
+	        this.data[i][j] = this.data[i][j] <= 0 ? 0.1 * this.data[i][j] : this.data[i][j];
+	      }
+      }
+  }
+  public static Matrix dRelu(Matrix m){
+	  Matrix result = new Matrix(m.rows, m.cols);
+      for (int i = 0; i < m.rows; i++) {
+	      for (int j = 0; j < m.cols; j++) {
+	        result.data[i][j] =  result.data[i][j] <= 0 ? 0.1 : 1;
+	      }
+      }
+      return result;
+  }
   
   public static Matrix dLeakyRelu(Matrix m){
 	  Matrix result = new Matrix(m.rows, m.cols);
@@ -207,8 +217,6 @@ class Matrix {
       return result;
   }
   
-  
-  
   public void LeakyRelu(){
       for (int i = 0; i < this.rows; i++) {
 	      for (int j = 0; j < this.cols; j++) {
@@ -216,8 +224,6 @@ class Matrix {
 	      }
       }
   }
-  
-  
   
   public void SoftMax(){
       for (int i = 0; i < this.rows; i++) {
@@ -247,7 +253,6 @@ class Matrix {
 	  }
 	  return string;
   } 
-  
   
   public void map(Function fn) {
       for (int y = 0; y < rows; y++)

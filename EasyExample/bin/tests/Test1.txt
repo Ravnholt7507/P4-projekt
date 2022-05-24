@@ -1,25 +1,12 @@
 NeuralNetwork TestModel(784,100,10);
 
-InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k";
-TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k.txt";
+InputData = "C:\Universitet\Images\train10k";
+TargetData = "C:\Universitet\test10000.txt";
 Dataset Swag;
 Swag.Readimage(InputData, TargetData, ",", "\n");
 
-TestModel.setup(Swag, sigmoid, 0.4);
+TestModel.setup(Swag, relu, 0.4);
 
-InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train100";
-TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train100.txt";
-Dataset NewTrain;
-NewTrain.Readimage(InputData, TargetData, ",", "\n");
+TestModel.train(Swag, 10);
 
-TestModel.train(NewTrain, 100);
-
-
-InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100";
-TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt";
-Dataset TesterSet;
-
-TesterSet.Readimage(InputData, TargetData, ",", "\n");
-
-
-TestModel.predict(TesterSet);
+TestModel.predict(Swag);

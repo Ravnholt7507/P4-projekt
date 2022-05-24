@@ -1,7 +1,6 @@
 package Types;
 
 import expression.Expression;
-import expression.NN;
 import expression.Type;
 
 public class NN_Type extends Expression {

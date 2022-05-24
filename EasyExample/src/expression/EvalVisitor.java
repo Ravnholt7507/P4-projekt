@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +12,6 @@ import java.util.Scanner;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import antlr.ExprBaseVisitor;
 import antlr.ExprParser;
 import antlr.ExprParser.Add_dataContext;
@@ -25,7 +19,6 @@ import antlr.ExprParser.AdditiveOpContext;
 import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
-import antlr.ExprParser.ExprContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
@@ -35,7 +28,6 @@ import antlr.ExprParser.RelationalExprContext;
 import antlr.ExprParser.SetupContext;
 import antlr.ExprParser.StringContext;
 import antlr.ExprParser.TrainContext;
-import antlr.ExprParser.ValueContext;
 import antlr.ExprParser.VariableContext;
 import antlr.ExprParser.While_statContext;
 import antlr.ExprParser.Condition_blockContext;
@@ -44,7 +36,6 @@ import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
 import antlr.ExprParser.MultiOpContext;
 import antlr.ExprParser.AndExprContext;
-import antlr.ExprParser.ArraydeclContext;
 import antlr.ExprParser.BoolContext;
 import antlr.ExprParser.OrExprContext;
 import antlr.ExprParser.ParExprContext;
@@ -61,9 +52,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     private Map<String, Expression> memory = new HashMap<String, Expression>();
 
 	public List<String> semanticErrors;
-	
-	private Map<String, TrainingSet> DataSets = new HashMap<String, TrainingSet>();
-	
 	
 	public EvalVisitor() {
 		memory = new HashMap<String, Expression>();
@@ -97,7 +85,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return new OrExpr(left.asBoolean() || right.asBoolean());
     }
     
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public Expression visitRelationalExpr(RelationalExprContext ctx) {
         Expression left = this.visit(ctx.expr(0));
         Expression right = this.visit(ctx.expr(1));
@@ -150,7 +139,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	}
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public Expression visitEqualityExpr(EqualityExprContext ctx) {
         Expression left = this.visit(ctx.expr(0));
         Expression right = this.visit(ctx.expr(1));
@@ -190,8 +180,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
         }
     }
-
-    
+  
     //Arithmetic operations visitor
 	@Override
 	public Expression visitMultiOp(MultiOpContext ctx) {
@@ -215,21 +204,19 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             if (left.isDouble() || right.isDouble()) {
             	if (right.asDouble() == 0)
             	{
-            		throw new RuntimeException("Man må ikke dividere med 0");
+            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
             	}
             	return new Division(left.asDouble() / right.asDouble());
             }
             else
             	if (right.asInt() == 0)
             	{
-            		throw new RuntimeException("Man må ikke dividere med 0");
+            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
             	}
             return new Division(left.asInt() / right.asInt());
         }
         return null;
 	}
-
-	
 	
 	@Override
 	public Expression visitAdditiveOp(AdditiveOpContext ctx) {
@@ -253,10 +240,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	            return new Addition(left.toString() + right.toString());
 	        
 	        else if (!left.isString() && right.isString())
-	        	throw new RuntimeException("Strings skal lægges til strings");
+	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
 	        
 	        else if (left.isString() && !right.isString())
-	        	throw new RuntimeException("Strings skal lægges til strings");
+	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
 	        else 
 	        	return new Addition(left.asInt() + right.asInt());
         }
@@ -377,7 +364,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     		System.out.println("Warning: Output dimension from neural network does not match target file");
     	}
 
-    	Network.setup(set, LearningRate, x -> (1/( 1 + Math.pow(Math.E,(-1*x)))));
+    	Network.setup(set, LearningRate, ActFunc);
     	
     	memory.replace(NetworkId, Network);
     	return set; 
@@ -388,7 +375,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 
 		Token tokenid = ctx.getStart();
 		int line = tokenid.getLine();
-		int col = tokenid.getCharPositionInLine();
 		
     	System.out.println("Starting to train... ");
         int epochs = Integer.valueOf(ctx.expr().getText());
@@ -446,8 +432,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
       	
         return super.visitTrain(ctx);
     }
-    
-    
+        
     public boolean GetHit(int expected, double[] actual) {
     	int guess = 0;
     	double max = 0;
@@ -607,7 +592,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		
     	return null;
     }
-  
     
     @Override 
     public Expression visitRead_image_data(Read_image_dataContext ctx) {

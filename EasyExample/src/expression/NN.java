@@ -1,9 +1,6 @@
 package expression;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.antlr.v4.tool.ErrorSeverity;
 
 import Types.Dataset;
 
@@ -22,7 +19,7 @@ public class NN extends Expression{
 	
 	private double learning_rate;
 
-	public Function actfunc;
+	public String actfunc;
 	
 	public NN(int input_nodes, int hidden_nodes, int output_nodes) 
 	{
@@ -59,16 +56,15 @@ public class NN extends Expression{
 		super(type);
 	}
 
-	public void setup(Dataset Data, double learningRate, Function func) {
+	public void setup(Dataset Data, double learningRate, String actFunc) {
 		this.currentSet = Data;
 		this.learning_rate = learningRate;
-		this.actfunc = func;
+		this.actfunc = actFunc;
 	}
 	
 	public void changeSet(Dataset Data) {
 		this.currentSet = Data;
 	}
-	
 	
 	public double[] feedforward(double[] input_array) {
 	// Generating the Hidden Outputs
@@ -77,7 +73,19 @@ public class NN extends Expression{
 	    hidden.add(this.bias_h);
 	
 	    // activation function!
-	    hidden.Sigmoid();
+	   switch(actfunc) {
+	   case "sigmoid": case "Sigmoid":
+	    	hidden.Sigmoid();
+	    	break;
+	   case "relu": case "Relu": case "ReLu":
+	    	hidden.Relu();
+	    	break;
+	   case "LeakyReLu": case "Leakyrelu": case "leakyrelu":
+		   hidden.LeakyRelu();
+		   break;
+	   default:
+	    	hidden.Sigmoid();
+	    }
 	
 	    // Generating the output's output!
 	    Matrix output = Matrix.DotProduct(this.weights_ho, hidden);
@@ -95,8 +103,21 @@ public class NN extends Expression{
 	    hidden.add(this.bias_h);
 	
 	    // activation function!
-	    hidden.Sigmoid();
-	
+	    switch(actfunc) {
+	    case "sigmoid": case "Sigmoid":
+	    	hidden.Sigmoid();
+	    	break;
+	    case "relu": case "ReLu":
+	    	hidden.Relu();
+	    	break;
+	   case "LeakyReLu": case "Leakyrelu": case "leakyrelu":
+		   hidden.LeakyRelu();
+		   break;
+	    default:
+	    	hidden.Sigmoid();
+	    	break;
+	    }
+	    
 	    // Generating the output's output!
 	    Matrix output = Matrix.DotProduct(this.weights_ho, hidden);
 	    output.add(this.bias_o);
@@ -113,7 +134,9 @@ public class NN extends Expression{
 	    
 	    // let gradient = outputs * (1 - outputs);
 	    // Calculate gradient
-	    Matrix gradients = Matrix.dSigmoid(output);
+	    Matrix gradients = null;
+
+	    gradients = Matrix.dSigmoid(output);
 	    gradients.multiply(output_errors);
 	    gradients.multiply(this.learning_rate);    
 	    
@@ -132,7 +155,23 @@ public class NN extends Expression{
 	    Matrix hidden_errors = Matrix.DotProduct(who_t, output_errors);
 
 	    // Calculate hidden gradient
-	    Matrix hidden_gradient = Matrix.dSigmoid(hidden);
+	    Matrix hidden_gradient;
+	   
+	    switch(actfunc) {
+	    case "sigmoid": case "Sigmoid":
+	    	hidden_gradient = Matrix.dSigmoid(hidden);
+	    	break;
+	    case "relu": case "Relu":
+	    	hidden_gradient = Matrix.dRelu(hidden);
+	    	break;
+	   case "LeakyReLu": case "Leakyrelu": case "leakyrelu":
+		   hidden_gradient = Matrix.dLeakyRelu(hidden);
+		   break;
+	    default:
+	    	hidden_gradient = Matrix.dSigmoid(hidden);
+	    	break;
+	    }
+	    
 	    hidden_gradient.multiply(hidden_errors);
 	    hidden_gradient.multiply(this.learning_rate);
 
@@ -146,29 +185,3 @@ public class NN extends Expression{
 	    this.bias_h.add(hidden_gradient);
 	  }
 }
-
-
-
-
-
-
-
-
-
-/*NeuralNetwork ourModel(10,20,1)
-
-Dataset swag;
-
-swag.addData(Array[1,0,0,0,0,0,0,0,0,0], Array[0.1] ; Array[0,1,0,0,0,0,0,0,0,0], Array[0.2]; 
-			 Array[0,0,1,0,0,0,0,0,0,0], Array[0.3] ; Array[0,0,0,1,0,0,0,0,0,0], Array[0.4];
-			 Array[0,0,0,0,1,0,0,0,0,0], Array[0.5] ; Array[0,0,0,0,0,1,0,0,0,0], Array[0.6]; 
-			 Array[0,0,0,0,0,0,1,0,0,0], Array[0.7] ; Array[0,0,0,0,0,0,0,1,0,0], Array[0.8];
-			 Array[0,0,0,0,0,0,0,0,1,0], Array[0.9]);
-			 
-
-ourModel.setup(Dataset swag);
-
-ourModel.train(100000)
-
-
-*/

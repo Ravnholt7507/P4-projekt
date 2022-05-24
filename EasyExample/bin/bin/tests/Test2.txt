@@ -1,9 +1,0 @@
-a = true;
-
-b = true; 
-
-if (a >= b){
-
-Print(a);
-
-}
