@@ -30,7 +30,6 @@ import antlr.ExprParser.DatasetContext;
 import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
-import antlr.ExprParser.FunctionDeclContext;
 import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
 import antlr.ExprParser.MultiOpContext;
@@ -162,6 +161,8 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	
 	@Override
 	public Expression visitMultiOp(MultiOpContext ctx) {
+		
+		
 		Expression left = (Type) visit(ctx.getChild(0));
 		Expression right = (Type) visit(ctx.getChild(2));
 		
@@ -227,10 +228,10 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
 		
-		Expression expr = visit(ctx.condition_block(0).expr());
+		Expression expr = visit(ctx.condition_block().expr());
 	    if (! expr.type.equals(Type.BoolT)) // Find expression type 
 	        semanticErrors.add("Error: Boolean expression expected here ( " + "Line: " + line + ", " + "Col: " + col + ")");
-	    visit(ctx.condition_block(0).stat_block()); //Visit first command from if
+	    visit(ctx.condition_block().stat_block()); //Visit first command from if
 	    if (ctx.stat_block() != null)
 	    	visit(ctx.stat_block()); //Visit second command from else (if it exists)
 		return null;
@@ -268,21 +269,23 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	}
 	
 	public Expression visitRead_image_data(Read_image_dataContext ctx) {
-		String DatasetID = ctx.ID().getText();
+		String DatasetID = ctx.ID(0).getText();
 		
 		Token tokenid = ctx.getStart();
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
 		
 		if (!SymbolTable.containsKey(DatasetID)) {
-			semanticErrors.add("Error: Neural network with id: " + DatasetID + "not declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
+			semanticErrors.add("Error: Dataset with id: " + DatasetID + " not declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
-		Expression DataSet =  SymbolTable.get(DatasetID);
-		if (!DataSet.type.equals(Type.DataSetT)) {
-			semanticErrors.add("Error: incompatible types: ReadImageData must be used with type Network( " + "Line: " + line + ", " + "Col: " + col + ")");
+		else {
+			Expression DataSet =  SymbolTable.get(DatasetID);
+			if (!DataSet.type.equals(Type.DataSetT)) {
+				semanticErrors.add("Error: incompatible types: ReadImageData must be used with type Network( " + "Line: " + line + ", " + "Col: " + col + ")");
+			}
 		}
-		String InputStringID = ctx.atom(0).getText();
-		String OutputStringID = ctx.atom(1).getText();
+		String InputStringID = ctx.ID(1).getText();
+		String OutputStringID = ctx.ID(2).getText();
 		
 		Expression InputExpr = SymbolTable.get(InputStringID);
 		Expression OutputExpr = SymbolTable.get(OutputStringID);
@@ -300,9 +303,9 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		int col = tokenid.getCharPositionInLine();
 		
 		String id = ctx.ID().getText();
-		Expression left = visit(ctx.atom(0));
-		Expression middle = visit(ctx.atom(1));
-		Expression right = visit(ctx.atom(2));  
+		Expression left = visit(ctx.expr(0));
+		Expression middle = visit(ctx.expr(1));
+		Expression right = visit(ctx.expr(2));  
 		
 		if(SymbolTable.containsKey(id)) {
 			semanticErrors.add("Error: variable " + id + " already declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
@@ -324,23 +327,22 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
 		
-		String modelID =  ctx.ID().getText();
-		String datasetID = ctx.atom(0).getText();
-		Expression learningRate = visit(ctx.atom(1));
-
+		String modelID =  ctx.ID(0).getText();
+		String datasetID = ctx.ID(1).getText();
+		Expression learningRate = visit(ctx.expr());
+		
 		if(!SymbolTable.containsKey(modelID) || !SymbolTable.containsKey(datasetID))
 			semanticErrors.add("Error: Both Neural Network and Dataset must be defined ( " + "Line: " + line + ", " + "Col: " + col + ")");
-		
-		if(!SymbolTable.get(modelID).type.equals(Type.NetworkT)) 
-			semanticErrors.add("Error: Variable" + modelID + "Must be of type model ( " + "Line: " + line + ", " + "Col: " + col + ")" );		
-		
-		if (!SymbolTable.get(datasetID).type.equals(Type.DataSetT))
-			semanticErrors.add("Error: Variable" + datasetID + "Must be of type dataset ( " + "Line: " + line + ", " + "Col: " + col + ")" );	
-		
-		if(!learningRate.type.equals(Type.DoubleT)) {
-			semanticErrors.add("Error: Value must be of type double ( " + "Line: " + line + ", " + "Col: " + col + ")");
+		else {
+			if(!SymbolTable.get(modelID).type.equals(Type.NetworkT)) 
+				semanticErrors.add("Error: Variable" + modelID + "Must be of type model ( " + "Line: " + line + ", " + "Col: " + col + ")" );		
+			
+			if (!SymbolTable.get(datasetID).type.equals(Type.DataSetT))
+				semanticErrors.add("Error: Variable" + datasetID + "Must be of type dataset ( " + "Line: " + line + ", " + "Col: " + col + ")" );	
+			
+			if(!learningRate.type.equals(Type.DoubleT)) 
+				semanticErrors.add("Error: Value must be of type double ( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
-		
 		return null;
 	}
 	
@@ -350,7 +352,7 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
 		
-		String id =  ctx.ID().getText();
+		String id =  ctx.ID(0).getText();
 		Expression epochs = visit(ctx.expr());
 
 		if(!SymbolTable.containsKey(id)) {
@@ -365,26 +367,29 @@ public class TypeChecker extends ExprBaseVisitor<Expression> {
 	}
 	
 	public Expression visitPredict(PredictContext ctx) {
-		String modelid = ctx.ID().getText();
-		String left = ctx.atom(0).getText();
-		String right = ctx.atom(1).getText();
+		String modelID = ctx.ID(0).getText();
+		String dataID = ctx.ID(1).getText();
 		
 		Token tokenid = ctx.getStart();
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
+			
+		if(!SymbolTable.containsKey(modelID))
+			semanticErrors.add("Error: Neural Network not declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
+		else {
+			if(!SymbolTable.get(modelID).type.equals(Type.NetworkT) ) 
+				semanticErrors.add("Error: Model variable is wrong type( " + "Line: " + line + ", " + "Col: " + col + ")");
+			}
 		
 		
-		if(!SymbolTable.containsKey(modelid) || !SymbolTable.containsKey(left) || !SymbolTable.containsKey(right)){
-			semanticErrors.add("Error: Both Neural Network and Datasets  must be defined ( " + "Line: " + line + ", " + "Col: " + col + ")");
+		if(!SymbolTable.containsKey(dataID))
+				semanticErrors.add("Error: Dataset not declared ( " + "Line: " + line + ", " + "Col: " + col + ")");
+		else {	
+			if(!SymbolTable.get(dataID).type.equals(Type.DataSetT) ) 
+				semanticErrors.add("Error: Dataset variable is wrong type( " + "Line: " + line + ", " + "Col: " + col + ")");
 		}
 		return null;
 	}
-	
-	public Expression visitFunctionDecl(FunctionDeclContext ctx) {
-		
-		return null;
-	}
-	
 	
 //	public Expression visitPar(ParContext ctx) {
 //	List<Expression> myExpr = new ArrayList<Expression>();

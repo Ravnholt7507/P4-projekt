@@ -47,127 +47,6 @@ public class Dataset extends Expression {
 		super(type);
 	}
 
-	public Dataset() {
-		super();
-	}
-	
-	public Dataset(List<Double[]> in, List<Double[]> out) {
-		super();
-		this.inputs = in;
-		this.targets = out;
-	}
-	
-	//Add arrays manually
-	public void addData(List<Double[]> in, List<Double[]> out) {
-		this.inputs = in;
-		this.targets = out;
-	}
-	
-	//Methods for reading arrays online
-	public void ReadDataInput(String path, String Delimiter1, String Delimiter2, String inOut) {
-	       try {
-	            String Directory = path;
-	            String StringDelimiter = Delimiter1;
-	            String DoubleDelimiter = Delimiter2;
-	            Directory = Directory.substring(1,Directory.length()-1);
-	            StringDelimiter = StringDelimiter.substring(1, StringDelimiter.length()-1);
-	            
-	            DoubleDelimiter = DoubleDelimiter.substring(1, DoubleDelimiter.length()-1);
-
-	            System.out.print(Directory);
-	            
-	            File myFile = new File(Directory);
-	            Scanner myFileReader = new Scanner(myFile);
-	            myFileReader.useDelimiter(StringDelimiter);
-
-	            List<Double[]> Inputdata = new ArrayList<Double[]>();
-	            int count =0;
-	            while(myFileReader.hasNextLine())
-	            {
-	            	count = count + 1;  
-	                List<Double> innerList = new ArrayList<Double>();
-
-	                String ReadNext = new String(myFileReader.next());
-	                String[] SplitLine = ReadNext.split(DoubleDelimiter);
-	                
-	                for ( int i = 0; i < SplitLine.length; i++) 
-	                {
-	                    innerList.add(Double.parseDouble(SplitLine[i]));
-
-	                }
-	                
-	                Double[] ToarraY = innerList.toArray(new Double[innerList.size()]);
-	                
-	                System.out.print(innerList);
-	                
-	                Inputdata.add(ToarraY);
-	            }
-	            if (inOut == "in")
-	            	this.inputs = Inputdata;
-	            else if (inOut == "out")
-	            	this.targets = Inputdata;
-	            myFileReader.close();
-
-	        }
-	        catch (FileNotFoundException e) {
-	            System.out.println("Filen findes ikke");
-	        }
-	}
- 
-	
-	
-	
-	
-	
-	public void Run(String filepath1, String filepath2, String Delimiter, String Delimiter2) {
-	    System.out.println("Loading data... ");
-	    
-	    List<Double[]> Input = readImages(filepath1);
-	    List<Double[]> Expected = readResultFile(filepath2, Delimiter, Delimiter2);
-	    
-	    try {
-	    	if (Input.size() != Expected.size())
-	    		throw new Exception();
-	    }
-	    catch(Exception e) {
-	    	System.out.println("Error: Input size must match output size (In read data)");
-	    	System.out.println("Termination program");
-	    	System.exit(0);
-	    }
-	    
-	    this.inputs = Input;
-	    this.targets = Expected;
-
-	}
-
-	public static int countFiles(String folderPath) {
-	    File f = new File(folderPath);
-	    int count = 0;
-	    for (File file : f.listFiles()) {
-	            if (file.isFile()) {
-	                    count++;
-	            }
-	    }
-	    System.out.println("Number of files: " + count);
-	    return count;
-	}
-
-	public static Double[] copyFromIntArray(int[] source) {
-	    Double[] dest = new Double[source.length];
-	    for(int i=0; i<source.length; i++) {
-	        dest[i] = (double) source[i];
-	    }
-	    return dest;
-	}
-	
-	public static Double[] copyFromdoubleArray(double[] source) {
-	    Double[] dest = new Double[source.length];
-	    for(int i=0; i<source.length; i++) {
-	        dest[i] = source[i];
-	    }
-	    return dest;
-	}
-	
 	public static List<Double[]> readImages(String folderPath) {
 	    folderPath = folderPath.substring(1, folderPath.length()-1);
 	    File f = new File(folderPath);
@@ -208,11 +87,121 @@ public class Dataset extends Expression {
 	    System.out.println("Loading complete");
 	    return Inputdata;
 	}
-    
+    	
 
 	
+	public Dataset() {
+		super();
+	}
 	
+	public Dataset(List<Double[]> in, List<Double[]> out) {
+		super();
+		this.inputs = in;
+		this.targets = out;
+	}
+	
+	//Add arrays manually
+	public void addData(List<Double[]> in, List<Double[]> out) {
+		this.inputs = in;
+		this.targets = out;
+	}
+	
+	//Methods for reading arrays online
+	public void ReadDataInput(String path, String Delimiter1, String Delimiter2, String inOut) {
+	       try {
+	            String Directory = path;
+	            String StringDelimiter = Delimiter1;
+	            String DoubleDelimiter = Delimiter2;
+	            Directory = Directory.substring(1,Directory.length()-1);
+	            StringDelimiter = StringDelimiter.substring(1, StringDelimiter.length()-1);
+	            
+	            DoubleDelimiter = DoubleDelimiter.substring(1, DoubleDelimiter.length()-1);
 
+	            File myFile = new File(Directory);
+	            Scanner myFileReader = new Scanner(myFile);
+	            myFileReader.useDelimiter(StringDelimiter);
+
+	            List<Double[]> Inputdata = new ArrayList<Double[]>();
+	            int count =0;
+	            while(myFileReader.hasNextLine())
+	            {
+	            	count = count + 1;  
+	                List<Double> innerList = new ArrayList<Double>();
+
+	                String ReadNext = new String(myFileReader.next());
+	                String[] SplitLine = ReadNext.split(DoubleDelimiter);
+	                
+	                for ( int i = 0; i < SplitLine.length; i++) 
+	                {
+	                    innerList.add(Double.parseDouble(SplitLine[i]));
+
+	                }
+	                
+	                Double[] ToarraY = innerList.toArray(new Double[innerList.size()]);
+	                
+	                Inputdata.add(ToarraY);
+	            }
+	            if (inOut == "in")
+	            	this.inputs = Inputdata;
+	            else if (inOut == "out")
+	            	this.targets = Inputdata;
+	            myFileReader.close();
+
+	        }
+	        catch (FileNotFoundException e) {
+	            System.out.println("Filen findes ikke");
+	        }
+	}
+ 
+	
+	public void Run(String filepath1, String filepath2, String Delimiter, String Delimiter2) {
+	    System.out.println("Loading data... ");
+	    
+	    List<Double[]> Input = readImages(filepath1);
+	    List<Double[]> Expected = readResultFile(filepath2, Delimiter, Delimiter2);
+	    
+	    try {
+	    	if (Input.size() != Expected.size())
+	    		throw new Exception();
+	    }
+	    catch(Exception e) {
+	    	System.out.println("Error: Input size must match output size (In read data)");
+	    	System.out.println("Termination program");
+	    	System.exit(0);
+	    }
+	    
+	    this.inputs = Input;
+	    this.targets = Expected;
+	}
+
+	public static int countFiles(String folderPath) {
+	    File f = new File(folderPath);
+	    int count = 0;
+	    for (File file : f.listFiles()) {
+	            if (file.isFile()) {
+	                    count++;
+	            }
+	    }
+	    System.out.println("Number of files: " + count);
+	    return count;
+	}
+
+	public static Double[] copyFromIntArray(int[] source) {
+	    Double[] dest = new Double[source.length];
+	    for(int i=0; i<source.length; i++) {
+	        dest[i] = (double) source[i];
+	    }
+	    return dest;
+	}
+	
+	public static Double[] copyFromdoubleArray(double[] source) {
+	    Double[] dest = new Double[source.length];
+	    for(int i=0; i<source.length; i++) {
+	        dest[i] = source[i];
+	    }
+	    return dest;
+	}
+	
     public List<Double[]> readResultFile(String folderPath, String inputDel, String inputDel2){
         //IMPORTANT: If newline is input delimiter there must be a "space" at the end of the last input, and no empty newlines below it
         try {
@@ -237,7 +226,6 @@ public class Dataset extends Expression {
                 String ReadNextSubstringed;
                 
                 DelimitPlace = ReadNext.indexOf(StringDelimiter1) + 1;
-                System.out.println(DelimitPlace + " " + (ReadNext.length()-1));
                 ReadNextSubstringed = ReadNext.substring(DelimitPlace, ReadNext.length()-1);
                 Double[] currentArrayInput = new Double[ReadNextSubstringed.length()];
                 

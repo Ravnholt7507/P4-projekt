@@ -11,9 +11,13 @@ public abstract class Expression {
     public Expression() {
     }
     
+    
     public Expression(Type type) {
         this.type = type;
     }
+    
+    
+    
     
     
     

@@ -5,28 +5,28 @@ import java.util.Hashtable;
 
 
 public class SymbolTable {
-    public Hashtable <Integer, Variable> HT;
+    public Hashtable<String, Expression> HT;
 
      public SymbolTable(){
-             HT = new Hashtable<Integer, Variable>(); 
+             HT = new Hashtable<String, Expression>(); 
     }
 
-    public void enterNode(Variable var) 
+    public void enterNode(String id, Expression var) 
     {
-        int hashedKeyValue = (var.id.length())%10;
+        int hashedKeyValue = (id.length())%10;
         int attempt = 0;
 
         while (HT.containsKey(hashedKeyValue))
         {
             attempt++;
-            hashedKeyValue = (var.id.length()+attempt)%10;
+            hashedKeyValue = (id.length()+attempt)%10;
         }
         HT.put(hashedKeyValue, var);
     }
 
-    public Variable retrieveNode(String name)
+    public Variable retrieveNode(String id)
     {
-        int hashedKeyValue = (name.length())%10;
+        int hashedKeyValue = (id.length())%10;
         int attempt = 0;
 
         if (!HT.containsKey(hashedKeyValue))
@@ -34,10 +34,10 @@ public class SymbolTable {
             return null;
         }
         else
-            while(name != HT.get(hashedKeyValue).id) 
+            while(id != HT.get(hashedKeyValue).id) 
             {
                 attempt++;
-                hashedKeyValue = (name.length()+attempt)%10;
+                hashedKeyValue = (id.length()+attempt)%10;
             }
         return HT.get(hashedKeyValue);
     }

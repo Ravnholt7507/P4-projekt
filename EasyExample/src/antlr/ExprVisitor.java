@@ -44,6 +44,12 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStat_block(ExprParser.Stat_blockContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ExprParser#stat_block_NN}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStat_block_NN(ExprParser.Stat_block_NNContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ExprParser#while_stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

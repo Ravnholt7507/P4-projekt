@@ -23,6 +23,7 @@ public class ExpressionApp {
 	    }
 	    else {
 	        String fileName = args[0];
+	        
 	        ExprParser parser = getParser(fileName);
 	        
 	        //Tell antlr to build a parse tree

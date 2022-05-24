@@ -8,34 +8,39 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
-    ;
-    
+prog: (stat_block | stat_block_NN)+ EOF            # Program
+ ;
+ 
 decl		
  : ID '=' expr ';'
  ;
  
-if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
+if_stat: 'if' condition_block ('else' (stat_block | stat_block_NN))?
  ;
  
 condition_block
- : '(' expr ')' stat_block
+ : '(' expr ')' (stat_block | stat_block_NN)
  ;
  
 stat_block
- : '{' (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)* '}'
- | (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)
+ : '{' (expr | decl | print | if_stat | while_stat)* '}'
+ | (expr | decl | print | if_stat | while_stat)
+ ;
+ 
+stat_block_NN
+ : '{' (train | neural_network| read_image_data | setup | dataset | add_data | read_data | predict)* '}'
+ | (train | neural_network| read_image_data | setup | dataset | add_data | read_data | predict)
  ;
 
 while_stat: 'while' '(' expr ')' stat_block
  ;
 
 neural_network
- : NEURALNETWORK ID '(' atom ',' atom ',' atom ')' ';'
+ : NEURALNETWORK ID '(' expr ',' expr ',' expr ')' ';'
  ;
 
 setup
- : ID '.' SETUP '(' DATASET atom (',' ACTFUNC)? (',' atom)? ')' ';'
+ : ID '.' SETUP '(' ID (',' ACTFUNC)? (',' expr)? ')' ';'
  ;
 
 dataset
@@ -47,26 +52,28 @@ add_data
  ;
 
 read_data
- : ID '.' READDATA '(' atom ',' atom  ',' atom ',' atom ')' ';'
+ : ID '.' READDATA '(' ID ',' ID  ',' STRING ',' STRING ')' ';'
  ;
 
 read_image_data
- : ID '.' READIMAGE '(' atom ',' atom ',' atom ',' atom ')' ';'
+ : ID '.' READIMAGE '(' ID ',' ID ',' STRING ',' STRING ')' ';'
  ;
 
 predict
- : ID '.' PREDICT '(' atom (',' atom)? ')' ';'
+ : ID '.' PREDICT '(' ID ')' ';'
  ;
 
 /* TRAIN */
-train
- : ID '.' TRAIN '(' expr ')'
+train: ID '.' TRAIN '(' (ID ',')? expr ')' ';'
  ;
 
+epochs: INT								
+ ; 
+ 
 /* ARRAYS */
 
 arraydecl
- : ID '[' (INT | DOUBLE)? ']' ('=' array)? ';'
+ : ID '[' expr ']' ('=' array)? ';'
  ;
 
 array: '{' value (',' value)* '}'
@@ -79,49 +86,31 @@ value: INT | DOUBLE
 
 expr: expr op=(MULT | DIV) expr				# MultiOp
     | expr op=(ADD | SUB) expr              # AdditiveOp
+    
     | expr op=(LTEQ | GTEQ | LT | GT) expr  # RelationalExpr
     | expr op=(EQ | NEQ) expr               # EqualityExpr
  	| expr AND expr                         # AndExpr
  	| expr OR expr                          # OrExpr
- 	| atom									# Types
- 	;
-
-atom: LPAR expr RPAR						# ParExpr
+ 	
+ 	| LPAR expr RPAR						# parExpr	
  	| BOOL									# Bool
     | ID                            		# Variable
     | DOUBLE 	                      		# Double
     | INT									# Int
     | STRING								# String
     ;
-
-networkExpr: decl							
-	| if_stat								
-	| while_stat							
-	| neural_network						
-	| setup									
-	| dataset								
-	| add_data								
-	| read_data								
-	| read_image_data						
-	| predict								
-	| train									
-	| arraydecl
-	| print
-	| read								
-	;
-	
-print
- : 'Print' '(' (expr | ID) ')' ';'
+ 
+print:
+ PRINT '(' expr ')' ';'
  ;
  
-read
- : 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
+read:
+ 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
  ;
 
-/* Tokens */
+/* Terminal Formation rules */
 TRAIN:'train';
 ACTFUNC:'sigmoid' | 'Sigmoid' | 'Softmax' | 'SoftMax' | 'relu' | 'Relu' | 'ReLu';
-ARRAY:'array' | 'Array';
 NEURALNETWORK:'NeuralNetwork';
 SETUP:'Setup' | 'setup';
 DATASET: 'Dataset' | 'dataset';
@@ -129,7 +118,7 @@ ADDDATA: 'AddData' | 'addData';
 READDATA: 'ReadData' | 'Readdata' | 'readdata';
 PREDICT: 'predict' | 'Predict';
 READIMAGE: 'Readimage' | 'readimage';
-FUNCTION: 'Function' | 'function' | 'FUNCTION';
+PRINT: 'Print' | 'print' | 'PRINT';
 
 /* Arithmatic operator */
 MULT: '*';
@@ -162,8 +151,6 @@ DOUBLE
  : [0-9]+ '.' [0-9]* 
  | '.' [0-9]+
  ;
- 
-
  
  /* Basics */
  ID : [a-zA-Z0-9]*;

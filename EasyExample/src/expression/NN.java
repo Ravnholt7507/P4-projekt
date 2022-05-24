@@ -42,8 +42,7 @@ public class NN extends Expression{
 	    
 	    this.bias_o = new Matrix(this.output_nodes, 1);
 	    this.bias_o.randomize();
-	    this.learning_rate = 0.1;   
-	    
+	    this.learning_rate = 0.1;
 	}
 	
 	public int getOutputSize() {
@@ -65,6 +64,11 @@ public class NN extends Expression{
 		this.learning_rate = learningRate;
 		this.actfunc = func;
 	}
+	
+	public void changeSet(Dataset Data) {
+		this.currentSet = Data;
+	}
+	
 	
 	public double[] feedforward(double[] input_array) {
 	// Generating the Hidden Outputs

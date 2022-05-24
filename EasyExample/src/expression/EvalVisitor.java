@@ -26,8 +26,6 @@ import antlr.ExprParser.DeclContext;
 import antlr.ExprParser.DoubleContext;
 import antlr.ExprParser.EqualityExprContext;
 import antlr.ExprParser.ExprContext;
-import antlr.ExprParser.FunctionDeclContext;
-import antlr.ExprParser.FunctiondeclContext;
 import antlr.ExprParser.Neural_networkContext;
 import antlr.ExprParser.PrintContext;
 import antlr.ExprParser.ReadContext;
@@ -192,7 +190,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             throw new RuntimeException("unknown operator: " + ExprParser.tokenNames[ctx.op.getType()]);
         }
     }
- 
+
+    
     //Arithmetic operations visitor
 	@Override
 	public Expression visitMultiOp(MultiOpContext ctx) {
@@ -216,19 +215,21 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
             if (left.isDouble() || right.isDouble()) {
             	if (right.asDouble() == 0)
             	{
-            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
+            		throw new RuntimeException("Man må ikke dividere med 0");
             	}
             	return new Division(left.asDouble() / right.asDouble());
             }
             else
             	if (right.asInt() == 0)
             	{
-            		throw new RuntimeException("Man mï¿½ ikke dividere med 0");
+            		throw new RuntimeException("Man må ikke dividere med 0");
             	}
             return new Division(left.asInt() / right.asInt());
         }
         return null;
 	}
+
+	
 	
 	@Override
 	public Expression visitAdditiveOp(AdditiveOpContext ctx) {
@@ -252,10 +253,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	            return new Addition(left.toString() + right.toString());
 	        
 	        else if (!left.isString() && right.isString())
-	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
+	        	throw new RuntimeException("Strings skal lægges til strings");
 	        
 	        else if (left.isString() && !right.isString())
-	        	throw new RuntimeException("Strings skal lï¿½gges til strings");
+	        	throw new RuntimeException("Strings skal lægges til strings");
 	        else 
 	        	return new Addition(left.asInt() + right.asInt());
         }
@@ -299,25 +300,21 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitIf_stat(If_statContext ctx) {
 
-        List<Condition_blockContext> conditions = ctx.condition_block();
+        Condition_blockContext condition = ctx.condition_block();
 
         boolean evaluatedBlock = false;
+        Expression evaluated = this.visit(condition.expr());
 
-        for(Condition_blockContext condition : conditions) {
-
-            Expression evaluated = this.visit(condition.expr());
-
-            if((Boolean) evaluated.value) {
-                evaluatedBlock = true;
-                // evaluate this block whose expr==true
-                this.visit(condition.stat_block());
-                break;
-            }
+        if((Boolean) evaluated.value) {
+            evaluatedBlock = true;
+            // evaluate this block whose expr==true
+            this.visit(condition.getChild(3));
         }
+        
 
         if(!evaluatedBlock && ctx.stat_block() != null) {
             // evaluate the else-stat_block (if present == not null)
-            this.visit(ctx.stat_block());
+            this.visit(ctx.getChild(3));
         }
 
         return If_stat.VOID;
@@ -348,9 +345,9 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override
     public Expression visitNeural_network(Neural_networkContext ctx) {
     	String id = ctx.ID().getText();
-    	int input = Integer.valueOf(ctx.atom(0).getText());
-    	int hidden = Integer.valueOf(ctx.atom(1).getText());
-    	int output = Integer.valueOf(ctx.atom(2).getText());
+    	int input = Integer.valueOf(ctx.expr(0).getText());
+    	int hidden = Integer.valueOf(ctx.expr(1).getText());
+    	int output = Integer.valueOf(ctx.expr(2).getText());
     	
     	Expression NeuralNetwork = new NN(input, hidden, output);
     	
@@ -359,11 +356,11 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override
     public Expression visitSetup(SetupContext ctx) {
-    	
+    	    	
     	String ActFunc = ctx.ACTFUNC().getText();
-    	String NetworkId = ctx.ID().getText();
-    	String DatasetId = ctx.atom(0).getText();
-    	double LearningRate = Double.valueOf(ctx.atom(1).getText());
+    	String NetworkId = ctx.ID(0).getText();
+    	String DatasetId = ctx.ID(1).getText();
+    	double LearningRate = Double.valueOf(ctx.expr().getText());
     	
     	Dataset set = (Dataset) memory.get(DatasetId);
     	NN Network = (NN) memory.get(NetworkId);
@@ -379,7 +376,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	catch (Exception e) {
     		System.out.println("Warning: Output dimension from neural network does not match target file");
     	}
-    	
+
     	Network.setup(set, LearningRate, x -> (1/( 1 + Math.pow(Math.E,(-1*x)))));
     	
     	memory.replace(NetworkId, Network);
@@ -392,10 +389,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		Token tokenid = ctx.getStart();
 		int line = tokenid.getLine();
 		int col = tokenid.getCharPositionInLine();
-    	
+		
     	System.out.println("Starting to train... ");
         int epochs = Integer.valueOf(ctx.expr().getText());
-        String id = ctx.ID().getText();
+        String id = ctx.ID(0).getText();
         
         //Helper vars
         double temp_epoch = 0;
@@ -404,12 +401,20 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         //get neural network from memory
         NN Network = (NN) memory.get(id);
         
+		if (ctx.ID(1) != null) {
+			String SetId = ctx.ID(1).getText();
+	        //get Dataset from memory
+	        Dataset set = (Dataset) memory.get(SetId);
+	        Network.changeSet(set);
+		}
+        
         try {
 		if (Network.currentSet == null) 
 			throw new Exception();
 		}
         catch(Exception e) {
-        	System.out.print("Exception on line " + line + ", " + "Dataset not applied to instance of model " + id+".");
+        	System.out.println("Exception on line " + line + ", " + " Dataset is empty ");
+        	System.out.println("Program Terminating");
         	System.exit(0);
         }
         
@@ -418,8 +423,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         DecimalFormat numberFormat = new DecimalFormat("#");
         double DEpochs = epochs;
         
-        List<double[]> inputs = fromDouble2(Network.currentSet.inputs);
-        List<double[]> targets= fromDouble2(Network.currentSet.targets);
+        List<double[]> inputs = todouble(Network.currentSet.inputs);
+        List<double[]> targets= todouble(Network.currentSet.targets);
         
         // Trains the dataset for each epoch
       	for (int j = 1; j<epochs; j++) {
@@ -441,7 +446,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
       	
         return super.visitTrain(ctx);
     }
-      
+    
+    
     public boolean GetHit(int expected, double[] actual) {
     	int guess = 0;
     	double max = 0;
@@ -536,29 +542,24 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     
     @Override 
     public Expression visitPredict(PredictContext ctx) {
-        String id = ctx.ID().getText();
+        String id = ctx.getChild(0).getText();
         NN Network = (NN) memory.get(id);  
         double hitRateCounter = 0;
         
-        //Get Inputs from source
-    	String path = ctx.atom(0).getText();  	
-    	Expression DataPath = memory.get(path);	
-    	List<double[]> TestInput = fromDouble2(Dataset.readImages((String) DataPath.value));
-    	
-    	//Get Output labels from source
-		String LabelString = ctx.atom(1).getText();
-		Expression LabelDataPath = memory.get(LabelString);	
-    	List<double[]> testLabels = fromDouble2(Dataset.LoadTestLabels((String) LabelDataPath.value, ",", "\n"));
-    	
+        String SetId = ctx.ID(1).getText();
+        Dataset Data = (Dataset) memory.get(SetId);  
+        
+        List<double[]> TestInput = todouble(Data.inputs);
+        List<double[]> testLabels = todouble(Data.targets);
     	//Make sure dimensions for input and label match
 	    try {
 	    	if (TestInput.size() != testLabels.size())
 	    		throw new Exception();
 	    }
 	    catch(Exception e) {
-	    	System.out.println("Error: Input size must match output size in predict");
-	    	System.out.println("Termination program");
-	    	System.exit(0);
+	    	System.out.println("Warning: Input size must match output size in predict");
+	    	System.out.println("Could not perform predict");
+	    	return Network;
 	    }
 	    
 	    //Make sure output dimensions match neural network
@@ -568,6 +569,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	}
     	catch (Exception e) {
     		System.out.println("Warning: Output dimension from neural network does not match target file in prediction");
+	    	return Network;
     	}
     	
     	for ( int j =0; j<10; j++) {
@@ -597,7 +599,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	String Delimiter1 = ctx.getChild(8).getText();
     	String Delimiter2 = ctx.getChild(10).getText();
     	
-    	String id = ctx.ID().getText();
+    	String id = ctx.ID(0).getText();
 		Dataset set = (Dataset) memory.get(id);
 		
 		set.ReadDataInput((String) filePath1.value, Delimiter1, Delimiter2, "in");
@@ -610,17 +612,17 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     @Override 
     public Expression visitRead_image_data(Read_image_dataContext ctx) {
 
-    	String idFile1 = ctx.atom(0).getText();  	
+    	String idFile1 = ctx.ID(1).getText();  	
     	Expression filePath1 = memory.get(idFile1);
 
-    	String idFile2 = ctx.atom(1).getText();  	
+    	String idFile2 = ctx.ID(2).getText();  	
     	Expression filePath2 = memory.get(idFile2);
+
+    	String Delimiter1 = ctx.STRING(0).getText();
     	
-    	String Delimiter1 = ctx.atom(2).getText();
+    	String Delimiter2 = ctx.STRING(1).getText();
     	
-    	String Delimiter2 = ctx.atom(3).getText();
-    	
-    	String id = ctx.ID().getText();
+    	String id = ctx.ID(0).getText();
 		Dataset set = (Dataset) memory.get(id);
     	
     	set.Run((String) filePath1.value, (String) filePath2.value, Delimiter1, Delimiter2);
@@ -728,7 +730,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 		return Stream.of(arr).mapToDouble(Double::doubleValue).toArray();
     }
     
-    public List<double[]> fromDouble2(List<Double[]> List) 
+    public List<double[]> todouble(List<Double[]> List) 
     {
     	List<double[]> result = new ArrayList<double[]>();
     	for (Double[] arrayElement : List) {

@@ -249,10 +249,9 @@ class Matrix {
   } 
   
   
-  public Matrix map(Function fn) {
+  public void map(Function fn) {
       for (int y = 0; y < rows; y++)
           for (int x = 0; x < cols; x++)
               data[y][x] = fn.apply(data[y][x]);
-      return this;
   }
 }
