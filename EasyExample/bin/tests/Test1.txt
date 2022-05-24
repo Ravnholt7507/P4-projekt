@@ -1,21 +1,25 @@
-NeuralNetwork ourModel(784,100,10);
-Dataset swag;
+NeuralNetwork TestModel(784,100,10);
 
 InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k";
 TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train5k.txt";
+Dataset Swag;
+Swag.Readimage(InputData, TargetData, ",", "\n");
+
+TestModel.setup(Swag, sigmoid, 0.4);
+
+InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\train100";
+TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\train100.txt";
+Dataset NewTrain;
+NewTrain.Readimage(InputData, TargetData, ",", "\n");
+
+TestModel.train(NewTrain, 100);
 
 
+InputData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100";
+TargetData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt";
+Dataset TesterSet;
 
-ourModel.train(1)
-
-
-swag.Readimage(InputData, TargetData, ",", "\n");
-
-
-ourModel.setup(Dataset swag, sigmoid, 0.1);
+TesterSet.Readimage(InputData, TargetData, ",", "\n");
 
 
-TestData = "C:\\Users\\Mikkel\\Desktop\\Images\\test100";
-TestDataLabels = "C:\\Users\\Mikkel\\Desktop\\Images\\test100.txt"; 
-
-ourModel.predict(TestData, TestDataLabels);
+TestModel.predict(TesterSet);

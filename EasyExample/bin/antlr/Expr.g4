@@ -8,23 +8,28 @@ package antlr;
 }
 
 //start variable
-prog: (decl | expr | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | dataset | add_data | read_data | predict | arraydecl)+ EOF            # Program
-    ;
-    
+prog: (stat_block | stat_block_NN)+ EOF            # Program
+ ;
+ 
 decl		
  : ID '=' expr ';'
  ;
  
-if_stat: 'if' condition_block ('else if' condition_block)* ('else' stat_block)?
+if_stat: 'if' condition_block ('else' (stat_block | stat_block_NN))?
  ;
  
 condition_block
- : '(' expr ')' stat_block
+ : '(' expr ')' (stat_block | stat_block_NN)
  ;
  
 stat_block
- : '{' (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)* '}'
- | (expr | decl | print | if_stat | while_stat | train | read | neural_network | read_image_data | setup | train | dataset | add_data | read_data | predict)
+ : '{' (expr | decl | print | if_stat | while_stat)* '}'
+ | (expr | decl | print | if_stat | while_stat)
+ ;
+ 
+stat_block_NN
+ : '{' (train | neural_network| read_image_data | setup | dataset | add_data | read_data | predict)* '}'
+ | (train | neural_network| read_image_data | setup | dataset | add_data | read_data | predict)
  ;
 
 while_stat: 'while' '(' expr ')' stat_block
@@ -35,7 +40,7 @@ neural_network
  ;
 
 setup
- : ID '.' SETUP '(' DATASET ID (',' ACTFUNC)? (',' expr)? ')' ';'
+ : ID '.' SETUP '(' ID (',' ACTFUNC)? (',' expr)? ')' ';'
  ;
 
 dataset
@@ -55,11 +60,11 @@ read_image_data
  ;
 
 predict
- : ID '.' PREDICT '(' ID (',' ID)? ')' ';'
+ : ID '.' PREDICT '(' ID ')' ';'
  ;
 
 /* TRAIN */
-train: ID '.' TRAIN '(' expr ')'
+train: ID '.' TRAIN '(' (ID ',')? expr ')' ';'
  ;
 
 epochs: INT								
@@ -68,7 +73,7 @@ epochs: INT
 /* ARRAYS */
 
 arraydecl
- : ID '[' (INT | DOUBLE)? ']' ('=' array)? ';'
+ : ID '[' expr ']' ('=' array)? ';'
  ;
 
 array: '{' value (',' value)* '}'
@@ -81,30 +86,31 @@ value: INT | DOUBLE
 
 expr: expr op=(MULT | DIV) expr				# MultiOp
     | expr op=(ADD | SUB) expr              # AdditiveOp
+    
     | expr op=(LTEQ | GTEQ | LT | GT) expr  # RelationalExpr
     | expr op=(EQ | NEQ) expr               # EqualityExpr
  	| expr AND expr                         # AndExpr
  	| expr OR expr                          # OrExpr
- 	| LPAR expr RPAR						# parExpr
+ 	
+ 	| LPAR expr RPAR						# parExpr	
  	| BOOL									# Bool
     | ID                            		# Variable
     | DOUBLE 	                      		# Double
     | INT									# Int
     | STRING								# String
     ;
-
+ 
 print:
- 'Print' '(' (expr | ID) ')' ';'
+ PRINT '(' expr ')' ';'
  ;
  
 read:
  'read' '(' STRING ',' STRING  ',' STRING ')' ';'
  ;
 
-/* Tokens */
+/* Terminal Formation rules */
 TRAIN:'train';
 ACTFUNC:'sigmoid' | 'Sigmoid' | 'Softmax' | 'SoftMax' | 'relu' | 'Relu' | 'ReLu';
-ARRAY:'array' | 'Array';
 NEURALNETWORK:'NeuralNetwork';
 SETUP:'Setup' | 'setup';
 DATASET: 'Dataset' | 'dataset';
@@ -112,6 +118,7 @@ ADDDATA: 'AddData' | 'addData';
 READDATA: 'ReadData' | 'Readdata' | 'readdata';
 PREDICT: 'predict' | 'Predict';
 READIMAGE: 'Readimage' | 'readimage';
+PRINT: 'Print' | 'print' | 'PRINT';
 
 /* Arithmatic operator */
 MULT: '*';
@@ -144,8 +151,6 @@ DOUBLE
  : [0-9]+ '.' [0-9]* 
  | '.' [0-9]+
  ;
- 
-
  
  /* Basics */
  ID : [a-zA-Z0-9]*;
