@@ -36,6 +36,7 @@ import antlr.ExprParser.If_statContext;
 import antlr.ExprParser.IntContext;
 import antlr.ExprParser.MultiOpContext;
 import antlr.ExprParser.AndExprContext;
+import antlr.ExprParser.ArraydeclContext;
 import antlr.ExprParser.BoolContext;
 import antlr.ExprParser.OrExprContext;
 import antlr.ExprParser.ParExprContext;
@@ -328,6 +329,21 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
         return While_stat.VOID;
     }
     
+    public Expression visitArraydecl(ArraydeclContext ctx) {
+        String id = ctx.ID().getText();
+
+        List<Expression> array = new ArrayList<Expression>();
+
+        for (int i = 0; i<ctx.array().expr().size(); i++)
+            array.add(this.visit(ctx.array().expr(i)));
+
+        if (memory.containsKey(id)) {
+            memory.replace(id, new ArrayDouble_Type(array));
+        }
+
+        return memory.put(id, new ArrayDouble_Type(array));
+    }
+    
     //Language Specific Overrides
     @Override
     public Expression visitNeural_network(Neural_networkContext ctx) {
@@ -517,15 +533,15 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	List<Double[]> output = new ArrayList<Double[]>();
     		
     	for (int i = 0; i < ctx.array().size(); i=i+2) {
-    		Double[] TempInput = new Double[ctx.array(i).value().size()];
-    		Double[] TempOutput = new Double[ctx.array(i+1).value().size()]; 
+    		Double[] TempInput = new Double[ctx.array(i).expr().size()];
+    		Double[] TempOutput = new Double[ctx.array(i+1).expr().size()]; 
     		
-    		for (int j=0; j<ctx.array(i).value().size(); j++) {
-    			TempInput[j] = Double.valueOf(ctx.array(i).value(j).getText());
+    		for (int j=0; j<ctx.array(i).expr().size(); j++) {
+    			TempInput[j] = Double.valueOf(ctx.array(i).expr(j).getText());
     		}
     		
-    		for (int j=0; j<ctx.array(i+1).value().size(); j++) {
-    			TempOutput[j] = Double.valueOf(ctx.array(i+1).value(j).getText());
+    		for (int j=0; j<ctx.array(i+1).expr().size(); j++) {
+    			TempOutput[j] = Double.valueOf(ctx.array(i+1).expr(j).getText());
     		}
     		
     		input.add(TempInput);

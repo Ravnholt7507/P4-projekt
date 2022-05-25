@@ -67,17 +67,17 @@ predict
 train: ID '.' TRAIN '(' (ID ',')? expr ')' ';'
  ;
 
-epochs: INT								
- ; 
- 
-/* ARRAYS */
-
+/*ARRAYS*/
 arraydecl
- : ID '[' expr ']' ('=' array)? ';'
+ : ID '[' expr ']' '=' array ';'
  ;
 
-array: '{' value (',' value)* '}'
-     ;
+array
+ :'{' expr (',' expr) '}'
+ ;
+
+epochs: INT								
+ ; 
 
 value: INT | DOUBLE
      ;
