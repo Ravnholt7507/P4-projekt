@@ -217,8 +217,12 @@ public class Dataset extends Expression {
                 
                 String[] SplitLine = ReadNextSubstringed.split("");
                 
-                for ( int j = 0; j < SplitLine.length; j++) {
-                     currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
+                //Assign data to each target array from text file
+                if (SplitLine.length > 1)
+                	for ( int j = 0; j < SplitLine.length; j++) 
+                		currentArrayInput[j] = Double.parseDouble(SplitLine[j]);
+                else 
+		    currentArrayInput[0] = Double.parseDouble(SplitLine[0])/10;
                 
                 Inputdata.add(currentArrayInput);
             }
@@ -310,11 +314,13 @@ public class Dataset extends Expression {
 	                
 	                String[] SplitLine = ReadNextSubstringed.split("");
 	                
-	                for ( int j = 0; j < SplitLine.length; j++) {
-	                     currentArrayInput[j] = (Double.parseDouble(SplitLine[j])); }
-	                
+	                //Assign data to each target array from text file
+	                if (SplitLine.length > 1)
+			for ( int j = 0; j < SplitLine.length; j++) 
+			     currentArrayInput[j] = Double.parseDouble(SplitLine[j]);
+	                else 
+	                     currentArrayInput[0] = Double.parseDouble(SplitLine[0])/10;
 	                Inputdata.add(currentArrayInput);
-	                count += 1;
 	            }
 	            myFileReader.close();
 	            
