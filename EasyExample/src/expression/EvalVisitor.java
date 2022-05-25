@@ -437,6 +437,10 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	int guess = 0;
     	double max = 0;
     	
+	if (actual.length == 1) {
+    	     return expected == Math.round(actual[0]*10);
+    	}
+	    
     	for (int i =0; i < actual.length; i++) {	
     		if (actual[i] > max) 
     		{
@@ -455,6 +459,13 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	double Sum = 0;
     	int guess = 0;
     	double max = 0;
+	    
+	    	//Pretty print for single output node
+    	if (ds.length == 1) {
+	    	System.out.print("Prediction: " + Math.round(ds[0]*10) + "     ");
+	    	return hit;
+    	}
+    	
     	
     	for (int i =0; i < ds.length; i++) {
     		Sum += ds[i];
@@ -477,6 +488,11 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     }
     
     public int helper(double[] ds) {
+    	//If the output is already a single number, we use that number.
+    	if (ds.length == 1)
+    		return (int) Math.round(ds[0]*10);
+    	
+    	//If output is string of 0 / 1's we convert it to the corresponding number.
     	for (int i =0; i < ds.length; i++) {
     		if (ds[i] == 1.0)
     			return i;
@@ -546,7 +562,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	    	System.out.println("Could not perform predict");
 	    	return Network;
 	    }
-	    
 	    //Make sure output dimensions match neural network
     	try {
         	if (testLabels.get(0).length != Network.getOutputSize())
@@ -557,16 +572,18 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	    	return Network;
     	}
     	
-    	for ( int j =0; j<10; j++) {
-     		System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
-    		System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 
-    	}
+    	//Print 10 first predictions
+		for (int j=0; j<10; j++) {
+			System.out.print("Expected: " + OutputToNumber(testLabels.get(j)) + "        ");
+			System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 	
+		}
     	
+    	//Get and print hitRate
         for (int i = 0; i<TestInput.size(); i++) {
-	  		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) {
-	  			hitRateCounter += 1;
-	  		}
-  		} 
+    		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) {
+    			hitRateCounter += 1;
+    		}
+  	} 
       	System.out.println("TEST HITRATE:  " + (hitRateCounter / (double) TestInput.size()) * 100);
 
     	return Network;
