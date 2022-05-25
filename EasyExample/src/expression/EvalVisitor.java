@@ -454,8 +454,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     		return false;
     }
     
-    public int PrettyPrintGuess(double[] ds) {
-    	int hit = 0;
+    public void PrettyPrintGuess(double[] ds) {
     	double Sum = 0;
     	int guess = 0;
     	double max = 0;
@@ -463,7 +462,6 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
 	    	//Pretty print for single output node
     	if (ds.length == 1) {
 	    	System.out.print("Prediction: " + Math.round(ds[0]*10) + "     ");
-	    	return hit;
     	}
     	
     	
@@ -484,7 +482,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     		System.out.print("%");
 
     	}
-		return hit;
+    	System.out.print("\n");
     }
     
     public int helper(double[] ds) {
@@ -575,7 +573,8 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	//Print 10 first predictions
 		for (int j=0; j<10; j++) {
 			System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
-			System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 	
+			System.out.print(" ");
+			PrettyPrintGuess(Network.feedforward(TestInput.get(j))); 	
 		}
     	
     	//Get and print hitRate
@@ -583,7 +582,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     		if (GetHit(helper((testLabels.get(i))), Network.feedforward(TestInput.get(i))) == true) {
     			hitRateCounter += 1;
     		}
-  	} 
+        } 
       	System.out.println("TEST HITRATE:  " + (hitRateCounter / (double) TestInput.size()) * 100);
 
     	return Network;
