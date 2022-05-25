@@ -574,7 +574,7 @@ public class EvalVisitor extends ExprBaseVisitor<Expression> {
     	
     	//Print 10 first predictions
 		for (int j=0; j<10; j++) {
-			System.out.print("Expected: " + OutputToNumber(testLabels.get(j)) + "        ");
+			System.out.print("Expected: " + helper(testLabels.get(j)) + "        ");
 			System.out.println(PrettyPrintGuess(Network.feedforward(TestInput.get(j)))); 	
 		}
     	
