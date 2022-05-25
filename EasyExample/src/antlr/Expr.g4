@@ -8,14 +8,16 @@ package antlr;
 }
 
 //start variable
-prog: (stat_block | stat_block_NN)+ EOF            # Program
+prog
+ : (stat_block | stat_block_NN)+ EOF            # Program
  ;
  
 decl		
  : ID '=' expr ';'
  ;
  
-if_stat: 'if' condition_block ('else' (stat_block | stat_block_NN))?
+if_stat
+ : 'if' condition_block ('else' (stat_block | stat_block_NN))?
  ;
  
 condition_block
@@ -32,7 +34,8 @@ stat_block_NN
  | (train | neural_network| read_image_data | setup | dataset | add_data | read_data | predict)
  ;
 
-while_stat: 'while' '(' expr ')' stat_block
+while_stat
+ : 'while' '(' expr ')' stat_block
  ;
 
 neural_network
@@ -64,7 +67,8 @@ predict
  ;
 
 /* TRAIN */
-train: ID '.' TRAIN '(' (ID ',')? expr ')' ';'
+train
+ : ID '.' TRAIN '(' (ID ',')? expr ')' ';'
  ;
 
 /*ARRAYS*/
@@ -76,22 +80,22 @@ array
  :'{' expr (',' expr) '}'
  ;
 
-epochs: INT								
+epochs
+ : INT								
  ; 
 
-value: INT | DOUBLE
-     ;
+value
+ : INT | DOUBLE
+ ;
    
 /* ANTLR resolves ambiguities by first alternative given */
 
 expr: expr op=(MULT | DIV) expr				# MultiOp
     | expr op=(ADD | SUB) expr              # AdditiveOp
-    
     | expr op=(LTEQ | GTEQ | LT | GT) expr  # RelationalExpr
     | expr op=(EQ | NEQ) expr               # EqualityExpr
  	| expr AND expr                         # AndExpr
  	| expr OR expr                          # OrExpr
- 	
  	| LPAR expr RPAR						# parExpr	
  	| BOOL									# Bool
     | ID                            		# Variable
@@ -100,12 +104,12 @@ expr: expr op=(MULT | DIV) expr				# MultiOp
     | STRING								# String
     ;
  
-print:
- PRINT '(' expr ')' ';'
+print
+ : PRINT '(' expr ')' ';'
  ;
  
-read:
- 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
+read
+ : 'read' '(' STRING ',' STRING  ',' STRING ')' ';'
  ;
 
 /* Terminal Formation rules */
@@ -138,14 +142,14 @@ LTEQ : '<=';
 LPAR : '(';
 RPAR : ')';
 
-
 /* Types */
 BOOL 
-: ('true' | 'TRUE' | 'false' | 'FALSE');
+ : ('true' | 'TRUE' | 'false' | 'FALSE')
+ ;
 
 INT
-: '0' | '-'?[1-9][0-9]*;
-
+ : '0' | '-'?[1-9][0-9]*
+ ;
 
 DOUBLE
  : [0-9]+ '.' [0-9]* 
@@ -153,7 +157,9 @@ DOUBLE
  ;
  
  /* Basics */
- ID : [a-zA-Z0-9]*;
+ID 
+ : [a-zA-Z0-9]*
+ ;
 
 STRING
  : '"' (~["\r\n] | '""')* '"'
